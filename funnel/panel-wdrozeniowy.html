@@ -44,7 +44,10 @@
 <style>
   /* ---------- Baza (zakres: tylko panel) ---------- */
   #onb-app { --onb-ease: cubic-bezier(.2, .7, .2, 1); }
-  #onb-app:not(.onb-ready) { visibility: hidden; }
+  /* Do startu skryptu panel jest ukryty, żeby nie mignął bez stylów.
+     Jeśli skrypt się nie uruchomi, CSS i tak pokaże panel po 1,2 s. */
+  @keyframes onbReveal { to { visibility: visible; } }
+  #onb-app:not(.onb-ready) { visibility: hidden; animation: onbReveal 0s linear 1.2s forwards; }
   #onb-app .onb-shell { container-type: inline-size; }
   #onb-app, #onb-app *, #onb-app *::before, #onb-app *::after { box-sizing: border-box; }
   #onb-app *, #onb-app *::before, #onb-app *::after { border-width: 0; border-style: solid; border-color: #E7E5E4; }
@@ -138,7 +141,7 @@
   @keyframes onbMarquee { to { transform: translateX(calc(-50% - .5rem)); } }
 
   /* ---------- Checklista (lead) ---------- */
-  #onb-app .onb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  #onb-app .onb-hp { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; opacity: 0; }
   #onb-app .onb-check {
     width: 1.25rem; height: 1.25rem; flex: none; margin-top: .125rem; border-radius: .375rem; cursor: pointer;
     border: 1.5px solid rgba(255, 255, 255, .45); background: transparent no-repeat center / .8rem;
@@ -325,7 +328,7 @@
                 <input class="onb-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
                 <label class="mt-4 flex items-start gap-3 text-sm leading-relaxed text-zinc-300">
                   <input id="onb-lead-consent" type="checkbox" class="onb-check onb-dark-field">
-                  <span>Chcę otrzymać checklistę oraz wiadomości e-mail z poradami o zarabianiu na poleceniach. Zgodę mogę wycofać w każdej chwili.<span data-privacy hidden> Szczegóły w <a href="#" data-href-key="privacy" data-link-type="contact" class="font-semibold text-white underline decoration-zinc-500 underline-offset-2 hover:decoration-white">polityce prywatności</a>.</span></span>
+                  <span>Chcę otrzymać checklistę oraz wiadomości e-mail z poradami o zarabianiu na poleceniach. Zgodę mogę wycofać w każdej chwili.<span data-privacy hidden> Szczegóły w <a href="#" data-href-key="privacy" data-link-type="plain" class="font-semibold text-white underline decoration-zinc-500 underline-offset-2 hover:decoration-white">polityce prywatności</a>.</span></span>
                 </label>
                 <p id="onb-lead-msg" class="mt-3 text-sm font-medium text-orange-300 empty:hidden" role="status" aria-live="polite"></p>
                 <p class="mt-4 flex items-center gap-2 text-xs text-zinc-400">
@@ -889,7 +892,7 @@
             </a>
             <div data-offer-expired class="rounded-xl border border-stone-300 bg-stone-50 p-5" hidden>
               <p class="font-semibold leading-relaxed">Czas minął. Oferta wygasła. Jeśli nadal chcesz skorzystać, wyślij do mnie wiadomość.</p>
-              <a href="#" data-href-key="contact" data-link-type="contact" data-track="click_contact" class="mt-4 inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800">Wyślij wiadomość</a>
+              <a href="#" data-href-key="contact" data-link-type="plain" data-hide-if-missing data-track="click_contact" class="mt-4 inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800">Wyślij wiadomość</a>
             </div>
             <p class="mt-4 max-w-[70ch] text-sm leading-relaxed text-stone-500">Przycisk otwiera okienko płatności tylko raz. Plan Startowy to plik PDF dostarczany od razu po płatności. Składając zamówienie, zgadzasz się na natychmiastowe dostarczenie treści cyfrowej i przyjmujesz do wiadomości, że tracisz wtedy prawo do odstąpienia od umowy. Dlatego po zakupie nie ma zwrotów.</p>
           </div>
@@ -993,15 +996,24 @@
         </div>
       </section>
 
+      <!-- ===================== STOPKA (pod każdym krokiem) ===================== -->
+      <footer class="mt-8 border-t border-stone-200 pt-4 text-xs leading-relaxed text-zinc-500">
+        <div class="flex flex-col gap-1 @xl:flex-row @xl:items-center @xl:justify-between @xl:gap-4">
+          <nav aria-label="Regulamin, prywatność i kontakt">
+            <ul class="flex flex-wrap items-center gap-x-5">
+              <li><a href="#" data-href-key="terms" data-link-type="plain" data-track="click_footer_link" data-track-data='{"link":"regulamin"}' class="inline-flex min-h-[40px] items-center transition-colors hover:text-zinc-900">Regulamin</a></li>
+              <li><a href="#" data-href-key="privacy" data-link-type="plain" data-track="click_footer_link" data-track-data='{"link":"polityka_prywatnosci"}' class="inline-flex min-h-[40px] items-center transition-colors hover:text-zinc-900">Polityka prywatności</a></li>
+              <li><a href="#" data-href-key="contact" data-link-type="plain" data-hide-if-missing data-track="click_footer_link" data-track-data='{"link":"kontakt"}' class="inline-flex min-h-[40px] items-center transition-colors hover:text-zinc-900">Kontakt</a></li>
+            </ul>
+          </nav>
+          <p>© 2026 Wszelkie prawa zastrzeżone</p>
+        </div>
+        <p class="mt-2 max-w-[80ch] text-zinc-500">Linki do banków i partnerów są linkami polecającymi. Mogę otrzymać za nie wynagrodzenie, a Ty nie płacisz przez to więcej. Treści w panelu to ogólne informacje, a nie porada finansowa ani podatkowa.</p>
+      </footer>
+
     </main>
   </div>
 
-  <footer class="mt-8 border-t border-stone-200 pt-6 text-sm leading-relaxed text-stone-500">
-    <div class="flex flex-col gap-3 @3xl:flex-row @3xl:items-start @3xl:justify-between">
-      <p class="max-w-[75ch]">Linki do banków i partnerów są linkami polecającymi. Mogę otrzymać za nie wynagrodzenie, a Ty nie płacisz przez to więcej. Treści w panelu to ogólne informacje, a nie porada finansowa ani podatkowa.</p>
-      <a href="#" data-href-key="contact" data-link-type="contact" data-track="click_contact" class="inline-flex min-h-[44px] flex-none items-center font-semibold text-zinc-900 underline decoration-stone-300 underline-offset-4 hover:decoration-zinc-900">Napisz do mnie</a>
-    </div>
-  </footer>
 
 </div>
 </div>
@@ -1045,12 +1057,13 @@
     },
 
     links: {
-      m2m: '',
-      ebroker: '',
+      m2m: 'https://panel.money2money.com.pl/register?idPartner=833681',
+      ebroker: 'https://ebrokerpartner.pl/polecajacy/hzJ9U',
       akademia: 'https://akademiaafiliacyjna.elms.pl/s/sprzedaz-mega-promocja.html?polecajacy=sroczynski.kuba',
       planStartowy: '',
       contact: '',
-      privacy: '',
+      terms: 'https://jakubsroczynski.pl/regulamin/',
+      privacy: 'https://jakubsroczynski.pl/polityka-prywatnosci/',
       banks: {
         mbank: '',
         pekao: '',
@@ -1169,8 +1182,17 @@ window.trackEvent = function (eventName, data) {
 
   var C = window.ONB_CONFIG || {};
   var track = window.trackEvent;
-  var root = document.getElementById('onb-app');
+  var copies = document.querySelectorAll('[id="onb-app"]');
+  var root = copies[0];
   if (!root) return;
+  /* Kod wklejony drugi raz: każda kolejna kopia panelu jest chowana (inaczej zostawia
+     na dole strony wielką pustą przestrzeń), a druga kopia skryptu nic więcej nie robi. */
+  for (var c = 1; c < copies.length; c++) copies[c].style.display = 'none';
+  if (copies.length > 1 && window.console && console.warn) {
+    console.warn('[Panel wdrożeniowy] Kod panelu jest na tej stronie ' + copies.length + ' razy. Zostaw jedną kopię.');
+  }
+  if (root.getAttribute('data-onb-init') === '1') return;
+  root.setAttribute('data-onb-init', '1');
 
   function $(sel, ctx) { return (ctx || root).querySelector(sel); }
   function $$(sel, ctx) { return Array.prototype.slice.call((ctx || root).querySelectorAll(sel)); }
@@ -1466,9 +1488,11 @@ window.trackEvent = function (eventName, data) {
       a.setAttribute('href', url);
       if (!/^(mailto|tel|sms):/i.test(url)) {
         a.setAttribute('target', '_blank');
-        a.setAttribute('rel', a.getAttribute('data-link-type') === 'contact' ? 'noopener' : 'sponsored noopener');
+        a.setAttribute('rel', a.hasAttribute('data-link-type') ? 'noopener' : 'sponsored noopener');
       }
       a.removeAttribute('data-missing');
+    } else if (a.hasAttribute('data-hide-if-missing')) {
+      (a.closest('li') || a).hidden = true;
     } else {
       a.setAttribute('data-missing', 'true');
       a.addEventListener('click', function (e) {
@@ -1842,7 +1866,7 @@ window.trackEvent = function (eventName, data) {
     { id: 'czas', k: ['czas', 'dlugo', 'minut', 'godzin', 'szybko'],
       a: 'Pierwszy krok to kilkanaście minut. Konto w banku zakładasz online, zwykle w kilkanaście minut. Resztę robisz we własnym tempie, a panel zapamięta, gdzie skończyłeś.' },
     { id: 'kontakt', k: ['kontakt', 'napisz', 'napisac', 'pomoc', 'problem', 'wiadomosc', 'czlowiek'],
-      a: 'Jeśli coś nie działa albo masz pytanie spoza panelu, napisz do mnie. Link "Napisz do mnie" jest na dole panelu.' }
+      a: 'Jeśli coś nie działa albo masz pytanie spoza panelu, napisz do mnie. Link "Kontakt" jest na dole panelu.' }
   ];
   var FALLBACK = 'Na to pytanie nie mam jeszcze gotowej odpowiedzi. Zacznij od Kroku 1 albo napisz do mnie, link do kontaktu jest na dole panelu.';
 
