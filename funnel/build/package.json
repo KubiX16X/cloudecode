@@ -1,0 +1,11 @@
+{
+  "name": "panel-wdrozeniowy-build",
+  "private": true,
+  "description": "Kompiluje style Tailwinda wbudowane w panel i tworzy wersję do wklejenia w Elementora.",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}
