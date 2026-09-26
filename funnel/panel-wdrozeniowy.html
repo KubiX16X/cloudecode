@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel wdrożeniowy</title>
+</head>
+<body style="margin:0;background:#F9F9F6">
+
+<!-- ================================================================
+     PANEL WDROŻENIOWY
+     WordPress: wklej wszystko od tej linii do linii "KONIEC PANELU"
+     do bloku "Własny HTML" (Custom HTML). Całą konfigurację
+     (linki, wideo, hasła, zegar) zmieniasz w bloku ONB_CONFIG niżej.
+     ================================================================ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Manrope:wght@400..800&display=swap">
+
+<script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
+<script>
+  /* Tailwind działa tylko wewnątrz #onb-app i nie resetuje stylów motywu WordPress. */
+  window.tailwind = window.tailwind || {};
+  tailwind.config = {
+    important: '#onb-app',
+    corePlugins: { preflight: false },
+    safelist: ['opacity-50', 'pointer-events-none'],
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Fraunces', 'Georgia', 'serif'],
+          sans: ['Manrope', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']
+        },
+        colors: {
+          canvas: '#F9F9F6',
+          moss: { 50: '#F0F4EF', 100: '#DCE6D9', 600: '#3D5A44', 700: '#2F4735' }
+        }
+      }
+    }
+  };
+</script>
+
+<style>
+  /* ---------- Baza (zakres: tylko panel) ---------- */
+  #onb-app { --onb-ease: cubic-bezier(.2, .7, .2, 1); }
+  #onb-app:not(.onb-ready) { visibility: hidden; }
+  #onb-app .onb-shell { container-type: inline-size; }
+  #onb-app, #onb-app *, #onb-app *::before, #onb-app *::after { box-sizing: border-box; }
+  #onb-app *, #onb-app *::before, #onb-app *::after { border-width: 0; border-style: solid; border-color: #E7E5E4; }
+  #onb-app :where(h1, h2, h3, h4, h5, h6, p, ol, ul, li, figure, figcaption, blockquote, dl, dd, details, summary, del) {
+    margin: 0; padding: 0; font-size: inherit; font-weight: inherit; font-family: inherit;
+    line-height: inherit; letter-spacing: inherit; text-transform: none; color: inherit; background: none;
+  }
+  #onb-app :where(ol, ul) { list-style: none; }
+  #onb-app :where(a) { color: inherit; text-decoration: none; background: none; box-shadow: none; }
+  #onb-app :where(img, svg, video, iframe) { display: block; max-width: 100%; }
+  #onb-app :where(img) { height: auto; }
+  #onb-app :where(button, input, textarea, select) {
+    font: inherit; color: inherit; letter-spacing: inherit; text-transform: none; margin: 0;
+    background: transparent; border-radius: 0; box-shadow: none; min-height: 0; width: auto;
+    line-height: inherit; -webkit-appearance: none; appearance: none;
+  }
+  #onb-app :where(button) { padding: 0; cursor: pointer; }
+  #onb-app :where(input) { padding: 0; }
+  #onb-app :where(input)::placeholder { color: #A8A29E; opacity: 1; }
+  #onb-app summary { list-style: none; cursor: pointer; }
+  #onb-app summary::-webkit-details-marker { display: none; }
+  #onb-app [hidden] { display: none !important; }
+  #onb-app :focus-visible { outline: 2px solid #18181B; outline-offset: 3px; }
+  #onb-app .onb-dark :focus-visible { outline-color: #FFFFFF; }
+  #onb-app [tabindex="-1"]:focus { outline: none; }
+  #onb-app .onb-num-tab { font-variant-numeric: tabular-nums; }
+  #onb-app a[aria-disabled="true"] { cursor: not-allowed; }
+
+  /* Link "przejdź do treści" */
+  #onb-app .onb-skip { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+  #onb-app .onb-skip:focus { left: 1rem; top: 1rem; z-index: 50; width: auto; height: auto; clip: auto; clip-path: none; background: #18181B; color: #fff; padding: .75rem 1rem; border-radius: .75rem; }
+
+  /* ---------- Zmiana widoków ---------- */
+  @keyframes onbFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  #onb-app .onb-view.onb-enter { animation: onbFadeIn .42s var(--onb-ease) both; }
+
+  /* ---------- Ścieżka postępu w pasku bocznym ---------- */
+  #onb-app .onb-node {
+    width: 2rem; height: 2rem; border-radius: 999px; display: grid; place-items: center; flex: none;
+    border: 1.5px solid rgba(255, 255, 255, .38); font-size: .8125rem; font-weight: 700;
+    transition: background-color .3s var(--onb-ease), color .3s var(--onb-ease), border-color .3s var(--onb-ease), box-shadow .3s var(--onb-ease);
+  }
+  #onb-app .onb-nav[data-state="open"] .onb-node { background: #FFFFFF; color: #18181B; border-color: #FFFFFF; }
+  #onb-app .onb-nav[data-state="locked"] { color: rgba(255, 255, 255, .62); }
+  #onb-app .onb-nav[data-state="locked"] .onb-node { border-style: dashed; color: rgba(255, 255, 255, .7); }
+  #onb-app .onb-nav[data-state="locked"] .onb-num,
+  #onb-app .onb-nav[data-state="open"] .onb-lock { display: none; }
+  #onb-app .onb-nav[aria-current="page"] { background: rgba(255, 255, 255, .09); }
+  #onb-app .onb-nav[aria-current="page"] .onb-node { box-shadow: 0 0 0 4px rgba(255, 255, 255, .16); }
+  @keyframes onbPop { 0% { transform: scale(.7); } 60% { transform: scale(1.14); } 100% { transform: scale(1); } }
+  #onb-app .onb-node.onb-pop { animation: onbPop .55s var(--onb-ease); }
+  @keyframes onbNudge { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+  #onb-app .onb-node.onb-nudge { animation: onbNudge .3s ease-in-out 2; }
+
+  @container (min-width: 56rem) {
+    #onb-app .onb-rail > li { position: relative; }
+    #onb-app .onb-rail > li:not(:last-child)::before,
+    #onb-app .onb-rail > li:not(:last-child)::after {
+      content: ""; position: absolute; left: calc(.75rem + 1rem - 1px); top: calc(2.75rem + 3px);
+      width: 2px; height: calc(1.75rem - 6px); border-radius: 2px; pointer-events: none;
+      background: rgba(255, 255, 255, .16);
+    }
+    #onb-app .onb-rail > li:not(:last-child)::after {
+      background: #FFFFFF; transform: scaleY(0); transform-origin: top; transition: transform .6s var(--onb-ease);
+    }
+    #onb-app .onb-rail > li.is-filled::after { transform: scaleY(1); }
+  }
+
+  /* ---------- FAQ ---------- */
+  #onb-app .onb-faq summary .onb-chev { transition: transform .25s var(--onb-ease); }
+  #onb-app .onb-faq[open] summary .onb-chev { transform: rotate(45deg); }
+
+  /* ---------- Asystent ---------- */
+  #onb-app .onb-bubble { max-width: 85%; padding: .75rem 1rem; border-radius: 1rem; font-size: .9375rem; line-height: 1.55; overflow-wrap: anywhere; }
+  #onb-app .onb-bubble-bot { background: #FFFFFF; border: 1px solid #E7E5E4; color: #27272A; border-bottom-left-radius: .375rem; }
+  #onb-app .onb-bubble-user { margin-left: auto; background: #18181B; color: #FFFFFF; border-bottom-right-radius: .375rem; }
+  @keyframes onbDot { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-2px); } }
+  #onb-app .onb-typing { display: inline-flex; gap: .3rem; align-items: center; height: 1.2rem; }
+  #onb-app .onb-typing i { width: .4rem; height: .4rem; border-radius: 999px; background: #78716C; animation: onbDot 1.1s infinite; }
+  #onb-app .onb-typing i:nth-child(2) { animation-delay: .15s; }
+  #onb-app .onb-typing i:nth-child(3) { animation-delay: .3s; }
+
+  /* ---------- Karuzela (marquee) ---------- */
+  #onb-app .onb-marquee { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); touch-action: pan-y; }
+  #onb-app .onb-marquee-track { display: flex; gap: 1rem; width: max-content; animation: onbMarquee 45s linear infinite; }
+  #onb-app .onb-marquee:hover .onb-marquee-track,
+  #onb-app .onb-marquee:active .onb-marquee-track,
+  #onb-app .onb-marquee:focus-within .onb-marquee-track,
+  #onb-app .onb-marquee.is-held .onb-marquee-track,
+  #onb-app .onb-marquee.is-paused .onb-marquee-track { animation-play-state: paused; }
+  @keyframes onbMarquee { to { transform: translateX(calc(-50% - .5rem)); } }
+
+  /* ---------- Ograniczony ruch ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    #onb-app *, #onb-app *::before, #onb-app *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    #onb-app .onb-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+    #onb-app .onb-marquee-track { animation: none !important; }
+    #onb-app .onb-clone { display: none; }
+  }
+</style>
+<noscript><style>#onb-app { visibility: visible !important; }</style></noscript>
+
+<div id="onb-app">
+<div class="onb-shell @container bg-canvas font-sans text-zinc-900 antialiased">
+<div id="onb-top" class="relative mx-auto max-w-7xl px-4 py-6 @3xl:px-6 @3xl:py-10 scroll-mt-4">
+
+  <a href="#onb-main" class="onb-skip text-sm font-semibold">Przejdź do treści</a>
+
+  <div class="grid items-start gap-5 @4xl:grid-cols-[17rem_minmax(0,1fr)] @4xl:gap-8">
+
+    <!-- ===================== PASEK BOCZNY ===================== -->
+    <aside class="onb-dark rounded-2xl bg-zinc-900 p-4 text-white shadow-sm @3xl:p-5 @4xl:sticky @4xl:top-6 @4xl:p-6" aria-label="Postęp i nawigacja">
+      <div class="flex items-center gap-3">
+        <span class="grid h-10 w-10 flex-none place-items-center rounded-xl bg-white text-zinc-900" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l4-4 3 3 5-6"/></svg>
+        </span>
+        <div class="min-w-0">
+          <p class="font-display text-lg font-medium leading-tight">Panel wdrożeniowy</p>
+          <p class="text-sm text-zinc-400">Zarabianie na poleceniach</p>
+        </div>
+      </div>
+
+      <div class="mt-5">
+        <div class="flex items-baseline justify-between text-sm">
+          <span class="text-zinc-300">Otwarte kroki</span>
+          <span id="onb-progress-label" class="onb-num-tab font-semibold">1 z 5</span>
+        </div>
+        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div id="onb-progress-bar" class="h-full rounded-full bg-white transition-[width] duration-700" style="width:20%"></div>
+        </div>
+      </div>
+
+      <nav class="mt-5 @4xl:mt-7" aria-label="Kroki">
+        <ol class="onb-rail grid grid-cols-3 gap-2 @4xl:grid-cols-1 @4xl:gap-1">
+          <li>
+            <a class="onb-nav flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-center transition-colors hover:bg-white/5 @4xl:grid @4xl:h-14 @4xl:grid-cols-[2rem_minmax(0,1fr)] @4xl:items-center @4xl:gap-3 @4xl:px-3 @4xl:py-0 @4xl:text-left" href="#start" data-view="start" data-step="0" data-state="open">
+              <span class="onb-node" aria-hidden="true">
+                <svg class="onb-num" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+              </span>
+              <span class="min-w-0">
+                <span class="block text-sm font-semibold">Start</span>
+                <span class="hidden truncate text-xs text-zinc-400 @4xl:block">Jak to działa</span>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a class="onb-nav flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-center transition-colors hover:bg-white/5 @4xl:grid @4xl:h-14 @4xl:grid-cols-[2rem_minmax(0,1fr)] @4xl:items-center @4xl:gap-3 @4xl:px-3 @4xl:py-0 @4xl:text-left" href="#krok-1" data-view="krok-1" data-step="1" data-state="open">
+              <span class="onb-node" aria-hidden="true"><span class="onb-num">1</span>
+                <svg class="onb-lock" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              </span>
+              <span class="min-w-0">
+                <span class="block text-sm font-semibold">Krok 1<span class="onb-state sr-only"></span></span>
+                <span class="hidden truncate text-xs text-zinc-400 @4xl:block">Rejestracja M2M</span>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a class="onb-nav flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-center transition-colors hover:bg-white/5 @4xl:grid @4xl:h-14 @4xl:grid-cols-[2rem_minmax(0,1fr)] @4xl:items-center @4xl:gap-3 @4xl:px-3 @4xl:py-0 @4xl:text-left" href="#krok-2" data-view="krok-2" data-step="2" data-state="locked">
+              <span class="onb-node" aria-hidden="true"><span class="onb-num">2</span>
+                <svg class="onb-lock" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              </span>
+              <span class="min-w-0">
+                <span class="block text-sm font-semibold">Krok 2<span class="onb-state sr-only"></span></span>
+                <span class="hidden truncate text-xs text-zinc-400 @4xl:block">Konta bankowe</span>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a class="onb-nav flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-center transition-colors hover:bg-white/5 @4xl:grid @4xl:h-14 @4xl:grid-cols-[2rem_minmax(0,1fr)] @4xl:items-center @4xl:gap-3 @4xl:px-3 @4xl:py-0 @4xl:text-left" href="#krok-3" data-view="krok-3" data-step="3" data-state="locked">
+              <span class="onb-node" aria-hidden="true"><span class="onb-num">3</span>
+                <svg class="onb-lock" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              </span>
+              <span class="min-w-0">
+                <span class="block text-sm font-semibold">Krok 3<span class="onb-state sr-only"></span></span>
+                <span class="hidden truncate text-xs text-zinc-400 @4xl:block">eBrokerPartner</span>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a class="onb-nav flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-center transition-colors hover:bg-white/5 @4xl:grid @4xl:h-14 @4xl:grid-cols-[2rem_minmax(0,1fr)] @4xl:items-center @4xl:gap-3 @4xl:px-3 @4xl:py-0 @4xl:text-left" href="#krok-4" data-view="krok-4" data-step="4" data-state="locked">
+              <span class="onb-node" aria-hidden="true"><span class="onb-num">4</span>
+                <svg class="onb-lock" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              </span>
+              <span class="min-w-0">
+                <span class="block text-sm font-semibold">Krok 4<span class="onb-state sr-only"></span></span>
+                <span class="hidden truncate text-xs text-zinc-400 @4xl:block">Akademia VIP</span>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a class="onb-nav flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-center transition-colors hover:bg-white/5 @4xl:grid @4xl:h-14 @4xl:grid-cols-[2rem_minmax(0,1fr)] @4xl:items-center @4xl:gap-3 @4xl:px-3 @4xl:py-0 @4xl:text-left" href="#krok-5" data-view="krok-5" data-step="5" data-state="locked">
+              <span class="onb-node" aria-hidden="true"><span class="onb-num">5</span>
+                <svg class="onb-lock" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              </span>
+              <span class="min-w-0">
+                <span class="block text-sm font-semibold">Krok 5<span class="onb-state sr-only"></span></span>
+                <span class="hidden truncate text-xs text-zinc-400 @4xl:block">Plan Startowy</span>
+              </span>
+            </a>
+          </li>
+        </ol>
+      </nav>
+
+      <p id="onb-nav-msg" class="mt-3 text-sm leading-snug text-zinc-200 empty:hidden" role="status" aria-live="polite"></p>
+      <p class="mt-6 hidden text-xs leading-relaxed text-zinc-400 @4xl:block">Postęp zapisuje się w tej przeglądarce. Możesz zamknąć stronę i wrócić później.</p>
+    </aside>
+
+    <!-- ===================== TREŚĆ ===================== -->
+    <main id="onb-main" class="@container min-w-0" tabindex="-1">
+
+      <!-- ===================== STRONA GŁÓWNA ===================== -->
+      <section class="onb-view space-y-5" data-view="start" aria-labelledby="onb-h-start">
+
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10">
+          <h1 id="onb-h-start" data-view-title tabindex="-1" class="max-w-[22ch] text-balance font-display text-[2.125rem] font-medium leading-[1.06] tracking-[-0.015em] @xl:text-[2.875rem] @3xl:text-[3.5rem]">Zarabiaj na polecaniu. Prosto, legalnie i w jednej kolejności.</h1>
+          <p class="mt-5 max-w-[60ch] text-[1.0625rem] leading-relaxed text-stone-600">Ten panel prowadzi Cię przez pięć kroków, jeden po drugim. Każdy następny krok otwierasz hasłem z poprzedniego, dzięki temu nic nie pominiesz i nie pomylisz kolejności.</p>
+
+          <div class="mt-7" data-video="start" data-title="Wideo powitalne">
+            <div class="grid aspect-video w-full place-items-center rounded-xl bg-zinc-900 p-6 text-center text-zinc-300">
+              <div>
+                <svg class="mx-auto" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z"/></svg>
+                <p class="mt-3 text-sm">Wideo powitalne pojawi się tutaj.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-7 flex flex-col gap-3 @xl:flex-row @xl:items-center">
+            <a href="#krok-1" class="inline-flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-7 py-3.5 text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">
+              Zacznij od Kroku 1
+            </a>
+            <button type="button" data-scroll-to="onb-faq" class="inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-zinc-700 underline decoration-stone-300 underline-offset-4 transition-colors hover:text-zinc-900 hover:decoration-zinc-900">
+              Najpierw przeczytam odpowiedzi na pytania
+            </button>
+          </div>
+        </div>
+
+        <!-- Ścieżka -->
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10">
+          <h2 class="font-display text-2xl font-medium leading-tight @xl:text-[1.875rem]">Cała ścieżka w pięciu krokach</h2>
+          <p class="mt-2 max-w-[60ch] text-stone-600">Kroki otwierają się po kolei. Hasło do następnego znajdziesz zawsze w poprzednim.</p>
+          <ol class="mt-6 divide-y divide-stone-200 border-y border-stone-200">
+            <li class="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-4 py-4 @xl:grid-cols-[2.5rem_minmax(0,1fr)_auto] @xl:items-center" data-path-step="1">
+              <span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">1</span>
+              <div class="min-w-0"><p class="font-semibold">Rejestracja M2M</p><p class="text-sm text-stone-600">Zakładasz konto i oglądasz wideo wprowadzające.</p></div>
+              <span class="onb-path-status col-start-2 text-sm font-semibold @xl:col-start-auto"></span>
+            </li>
+            <li class="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-4 py-4 @xl:grid-cols-[2.5rem_minmax(0,1fr)_auto] @xl:items-center" data-path-step="2">
+              <span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">2</span>
+              <div class="min-w-0"><p class="font-semibold">Konta bankowe z premią</p><p class="text-sm text-stone-600">Otwierasz konta z premią gotówkową, dobrane do Twojego wieku.</p></div>
+              <span class="onb-path-status col-start-2 text-sm font-semibold @xl:col-start-auto"></span>
+            </li>
+            <li class="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-4 py-4 @xl:grid-cols-[2.5rem_minmax(0,1fr)_auto] @xl:items-center" data-path-step="3">
+              <span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">3</span>
+              <div class="min-w-0"><p class="font-semibold">eBrokerPartner</p><p class="text-sm text-stone-600">Zakładasz konto partnera i polecasz produkty finansowe za prowizję.</p></div>
+              <span class="onb-path-status col-start-2 text-sm font-semibold @xl:col-start-auto"></span>
+            </li>
+            <li class="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-4 py-4 @xl:grid-cols-[2.5rem_minmax(0,1fr)_auto] @xl:items-center" data-path-step="4">
+              <span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">4</span>
+              <div class="min-w-0"><p class="font-semibold">Akademia VIP</p><p class="text-sm text-stone-600">Pełny program i wsparcie mentora, jeśli chcesz iść dalej.</p></div>
+              <span class="onb-path-status col-start-2 text-sm font-semibold @xl:col-start-auto"></span>
+            </li>
+            <li class="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-4 py-4 @xl:grid-cols-[2.5rem_minmax(0,1fr)_auto] @xl:items-center" data-path-step="5">
+              <span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">5</span>
+              <div class="min-w-0"><p class="font-semibold">Plan Startowy</p><p class="text-sm text-stone-600">Tańszy start: skrypty i darmowe źródła ruchu w jednym pliku PDF.</p></div>
+              <span class="onb-path-status col-start-2 text-sm font-semibold @xl:col-start-auto"></span>
+            </li>
+          </ol>
+        </div>
+
+        <!-- FAQ -->
+        <div id="onb-faq" class="scroll-mt-6 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10">
+          <h2 class="font-display text-2xl font-medium leading-tight @xl:text-[1.875rem]">Najczęstsze pytania</h2>
+          <p class="mt-2 max-w-[60ch] text-stone-600">Krótko i konkretnie. Jeśli nie znajdziesz odpowiedzi, zapytaj asystenta niżej.</p>
+
+          <div class="mt-6 divide-y divide-stone-200 border-y border-stone-200">
+            <details class="onb-faq group">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
+                Czy zarabianie na polecaniu jest legalne?
+                <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Tak. Programy poleceń prowadzą same banki, platformy i firmy szkoleniowe, a za skuteczne polecenie płacą premię lub prowizję. Warunek jest jeden: trzymasz się regulaminu każdego programu. Nie zakładasz kont na cudze dane, nie obiecujesz nikomu gwarantowanych zarobków i mówisz wprost, że link jest polecający.</p>
+            </details>
+            <details class="onb-faq group">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
+                Czy muszę płacić podatek od premii bankowych?
+                <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Zwykle nie musisz robić nic. Premie z promocji bankowych to najczęściej nagrody w sprzedaży premiowej. Nagroda do 2000 zł jest zwolniona z PIT, a od wyższej bank sam pobiera 10% zryczałtowanego podatku. Dokładne zasady każdej promocji opisuje jej regulamin.</p>
+            </details>
+            <details class="onb-faq group">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
+                Jak rozliczyć prowizje z poleceń?
+                <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Prowizja to Twój przychód, więc trzeba ją wykazać w zeznaniu rocznym. Przy małej skali możesz działać bez firmy, w ramach działalności nierejestrowanej. Jej limit to 225% minimalnego wynagrodzenia w kwartale. Gdy zarabiasz więcej, potrzebujesz firmy. To ogólna informacja, a nie porada podatkowa, więc w razie wątpliwości zapytaj księgową.</p>
+            </details>
+            <details class="onb-faq group">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
+                Czy potrzebuję doświadczenia?
+                <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Nie. Kroki są ułożone od najprostszego. Wystarczy, że masz ukończone 18 lat, telefon lub komputer i adres e-mail. Każdą czynność pokazuję w wideo albo opisuję krok po kroku.</p>
+            </details>
+            <details class="onb-faq group">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
+                Ile mogę zarobić?
+                <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">To zależy od tego, ile osób skorzysta z Twoich poleceń i jakie promocje są akurat dostępne. Kwoty przy bankach w Kroku 2 to maksymalne premie z promocji, a nie gwarantowany wynik. Nikt uczciwy nie obieca Ci konkretnej sumy.</p>
+            </details>
+            <details class="onb-faq group">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
+                Czy muszę coś kupić?
+                <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Płatne materiały są dopiero w Krokach 4 i 5: Akademia VIP i tańszy Plan Startowy. Oba są opcjonalne i sam decydujesz, czy z nich skorzystasz. Konta bankowe z Kroku 2 prowadzisz bez opłat, jeśli spełniasz warunki promocji.</p>
+            </details>
+            <details class="onb-faq group">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
+                Czy mogę zamknąć konto bankowe po otrzymaniu premii?
+                <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Tak, ale dopiero wtedy, gdy pozwala na to regulamin. Część banków odbiera premię, jeśli zamkniesz konto za wcześnie. Termin znajdziesz w regulaminie promocji, więc zapisz go sobie od razu po założeniu konta.</p>
+            </details>
+            <details class="onb-faq group">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
+                Czy moje dane są tu bezpieczne?
+                <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Ten panel nie wysyła nigdzie Twoich danych. Hasła do kroków i postęp zapisują się tylko w tej przeglądarce. Dane osobowe podajesz wyłącznie na stronach banków i partnerów, po kliknięciu w ich przyciski.</p>
+            </details>
+            <details class="onb-faq group">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
+                Nie mam hasła do następnego kroku. Co teraz?
+                <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Wróć do poprzedniego kroku i obejrzyj wideo do końca, hasło podaję na końcu. Jeśli nadal go nie masz, napisz do mnie. Link do kontaktu jest na dole panelu.</p>
+            </details>
+            <details class="onb-faq group">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
+                Ile czasu to zajmuje?
+                <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Pierwszy krok to kilkanaście minut. Konto w banku zakładasz online, zwykle w kilkanaście minut. Resztę robisz we własnym tempie, a panel zapamięta, gdzie skończyłeś.</p>
+            </details>
+          </div>
+        </div>
+
+        <!-- Wirtualny asystent -->
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10" aria-labelledby="onb-h-chat">
+          <div class="flex items-start gap-4">
+            <span class="grid h-11 w-11 flex-none place-items-center rounded-xl bg-zinc-900 text-white" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.2L18 9l-4.4 1.8L12 15l-1.6-4.2L6 9l4.4-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+            </span>
+            <div class="min-w-0">
+              <h2 id="onb-h-chat" class="font-display text-2xl font-medium leading-tight @xl:text-[1.875rem]">Wirtualny asystent</h2>
+              <p class="mt-1 max-w-[60ch] text-stone-600">Zapytaj o kroki, hasła, podatki albo płatności. Asystent odpowiada na podstawie informacji z tego panelu.</p>
+            </div>
+          </div>
+
+          <div id="onb-chat-log" class="mt-6 flex h-80 flex-col gap-3 overflow-y-auto rounded-xl border border-stone-200 bg-stone-50 p-4" role="log" aria-live="polite" aria-label="Rozmowa z asystentem">
+            <div class="onb-bubble onb-bubble-bot">Cześć, tu asystent panelu. Pomogę Ci z kolejnością kroków, hasłami, podatkami i płatnościami. O co chcesz zapytać?</div>
+          </div>
+
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button type="button" data-chat-suggest class="min-h-[40px] cursor-pointer rounded-lg border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-zinc-700 transition-colors hover:border-stone-400 hover:text-zinc-900">Czy to legalne?</button>
+            <button type="button" data-chat-suggest class="min-h-[40px] cursor-pointer rounded-lg border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-zinc-700 transition-colors hover:border-stone-400 hover:text-zinc-900">Jak rozliczyć podatek?</button>
+            <button type="button" data-chat-suggest class="min-h-[40px] cursor-pointer rounded-lg border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-zinc-700 transition-colors hover:border-stone-400 hover:text-zinc-900">Gdzie znajdę hasło?</button>
+            <button type="button" data-chat-suggest class="min-h-[40px] cursor-pointer rounded-lg border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-zinc-700 transition-colors hover:border-stone-400 hover:text-zinc-900">Od czego zacząć?</button>
+          </div>
+
+          <form id="onb-chat-form" class="mt-5" novalidate>
+            <label for="onb-chat-input" class="block text-sm font-semibold">Twoje pytanie</label>
+            <div class="mt-2 flex flex-col gap-3 @xl:flex-row">
+              <input id="onb-chat-input" type="text" maxlength="300" autocomplete="off" placeholder="Na przykład: czy muszę mieć firmę?" class="min-h-[52px] w-full flex-1 rounded-xl border border-stone-300 bg-white px-4 text-base text-zinc-900 transition-colors focus:border-zinc-900">
+              <button type="submit" class="inline-flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-7 text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">Zapytaj</button>
+            </div>
+            <p id="onb-chat-error" class="mt-2 text-sm font-medium text-orange-800 empty:hidden" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div class="flex justify-center pt-2">
+          <button type="button" data-scroll-to="onb-top" class="inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-900 shadow-sm transition-colors hover:border-stone-400 hover:bg-stone-50">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            Wróć na górę
+          </button>
+        </div>
+      </section>
+
+      <!-- ===================== KROK 1 ===================== -->
+      <section class="onb-view space-y-5" data-view="krok-1" aria-labelledby="onb-h-1" hidden>
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10">
+          <h1 id="onb-h-1" data-view-title tabindex="-1" class="text-balance font-display text-[2rem] font-medium leading-[1.08] tracking-[-0.01em] @xl:text-[2.5rem] @3xl:text-[2.875rem]">Krok 1. Aktywuj konto M2M</h1>
+          <p class="mt-4 max-w-[60ch] text-[1.0625rem] leading-relaxed text-stone-600">Od tego zaczynasz. Obejrzyj wideo, a potem załóż konto. Zajmie Ci to kilka minut.</p>
+
+          <div class="mt-7" data-video="krok1" data-title="Aktywacja M2M">
+            <div class="grid aspect-video w-full place-items-center rounded-xl bg-zinc-900 p-6 text-center text-zinc-300">
+              <div>
+                <svg class="mx-auto" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z"/></svg>
+                <p class="mt-3 text-sm">Wideo do Kroku 1 pojawi się tutaj.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-7">
+            <a href="#" data-href-key="m2m" class="inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto">
+              Przejdź do rejestracji M2M
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </a>
+            <p class="mt-3 text-sm text-stone-500">Formularz otworzy się w nowej karcie, a ten panel zostanie otwarty.</p>
+          </div>
+
+          <div class="mt-9 border-t border-stone-200 pt-7">
+            <h2 class="font-display text-2xl font-medium leading-tight">Co zrobić po rejestracji</h2>
+            <ol class="mt-5 space-y-4">
+              <li class="flex gap-4"><span class="grid h-8 w-8 flex-none place-items-center rounded-full border border-stone-300 text-sm font-bold onb-num-tab" aria-hidden="true">1</span><p class="pt-1 leading-relaxed"><span class="sr-only">1. </span>Sprawdź e-mail i aktywuj konto.</p></li>
+              <li class="flex gap-4"><span class="grid h-8 w-8 flex-none place-items-center rounded-full border border-stone-300 text-sm font-bold onb-num-tab" aria-hidden="true">2</span><p class="pt-1 leading-relaxed"><span class="sr-only">2. </span>Obejrzyj wideo do końca.</p></li>
+              <li class="flex gap-4"><span class="grid h-8 w-8 flex-none place-items-center rounded-full border border-stone-300 text-sm font-bold onb-num-tab" aria-hidden="true">3</span><p class="pt-1 leading-relaxed"><span class="sr-only">3. </span>Zanotuj hasło do Kroku 2.</p></li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="onb-gate" data-unlock="2">
+          <form data-gate-form class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8" novalidate>
+            <h2 class="font-display text-2xl font-medium leading-tight">Otwórz Krok 2</h2>
+            <p class="mt-1 text-stone-600" data-gate-hint>Hasło do Kroku 2 podaję na końcu wideo w Kroku 1.</p>
+            <label for="onb-pass-2" class="mt-5 block text-sm font-semibold">Hasło do Kroku 2</label>
+            <div class="mt-2 flex flex-col gap-3 @xl:flex-row">
+              <input id="onb-pass-2" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="onb-pass-2-msg" class="min-h-[52px] w-full flex-1 rounded-xl border border-stone-300 bg-white px-4 text-base uppercase tracking-wider text-zinc-900 transition-colors focus:border-zinc-900">
+              <button type="submit" class="inline-flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-7 text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">Odblokuj Krok 2</button>
+            </div>
+            <p id="onb-pass-2-msg" data-gate-msg class="mt-2 text-sm font-medium text-orange-800 empty:hidden" role="status" aria-live="polite"></p>
+          </form>
+          <div data-gate-open class="flex flex-col gap-4 rounded-2xl border border-moss-100 bg-moss-50 p-5 @xl:flex-row @xl:items-center @xl:justify-between @xl:p-6" hidden>
+            <p class="flex items-center gap-3 font-semibold text-moss-700"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span data-gate-open-text>Krok 2 jest już otwarty.</span></p>
+            <a href="#krok-2" class="inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800">Przejdź do Kroku 2</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== KROK 2 ===================== -->
+      <section class="onb-view space-y-5" data-view="krok-2" aria-labelledby="onb-h-2" hidden>
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10">
+          <h1 id="onb-h-2" data-view-title tabindex="-1" class="text-balance font-display text-[2rem] font-medium leading-[1.08] tracking-[-0.01em] @xl:text-[2.5rem] @3xl:text-[2.875rem]">Krok 2. Konta bankowe z premią</h1>
+          <p class="mt-4 max-w-[62ch] text-[1.0625rem] leading-relaxed text-stone-600">Wybierz sekcję dla swojego wieku i otwieraj konta po kolei. Każdy z tych banków wypłaca premię gotówkową, gdy spełnisz warunki jego promocji.</p>
+
+          <div class="mt-6" data-video="krok2" data-title="Konta bankowe" data-optional></div>
+
+          <div class="mt-7 rounded-xl border border-stone-200 bg-stone-50 p-5 @xl:p-6">
+            <h2 class="font-semibold">Trzy zasady, które chronią premię</h2>
+            <ul class="mt-3 space-y-2.5 text-[0.9375rem] leading-relaxed text-stone-700">
+              <li class="flex gap-3"><svg class="mt-1 flex-none text-moss-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>Zakładaj jedno konto naraz i zapisuj datę założenia.</li>
+              <li class="flex gap-3"><svg class="mt-1 flex-none text-moss-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>Spełnij warunki z regulaminu, najczęściej są to płatności kartą lub BLIK i wpływ na konto.</li>
+              <li class="flex gap-3"><svg class="mt-1 flex-none text-moss-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>Nie zamykaj konta, zanim bank wypłaci premię.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Sekcja A -->
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10" aria-labelledby="onb-h-a">
+          <div class="flex flex-col gap-2 @xl:flex-row @xl:items-end @xl:justify-between">
+            <div>
+              <h2 id="onb-h-a" class="font-display text-[1.75rem] font-medium leading-tight @xl:text-[2rem]">Poniżej 26 lat</h2>
+              <p class="mt-1 text-stone-600">Promocje dla osób, które nie skończyły 26 lat.</p>
+            </div>
+            <p class="text-sm font-semibold text-moss-700">4 banki, razem do 1&nbsp;550&nbsp;zł</p>
+          </div>
+
+          <div class="mt-6 grid gap-4 @xl:grid-cols-2">
+            <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
+              <h3 class="text-lg font-bold">mBank</h3>
+              <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
+              <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">450&nbsp;zł</p>
+              <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
+              <a href="#" data-href-key="banks.mbank" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w mBanku</span></a>
+            </article>
+            <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
+              <h3 class="text-lg font-bold">Bank Pekao</h3>
+              <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
+              <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">400&nbsp;zł</p>
+              <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
+              <a href="#" data-href-key="banks.pekao" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Banku Pekao</span></a>
+            </article>
+            <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
+              <h3 class="text-lg font-bold">PKO BP</h3>
+              <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
+              <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">300&nbsp;zł</p>
+              <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
+              <a href="#" data-href-key="banks.pkobp" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w PKO BP</span></a>
+            </article>
+            <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
+              <h3 class="text-lg font-bold">Alior Bank</h3>
+              <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
+              <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">400&nbsp;zł</p>
+              <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
+              <a href="#" data-href-key="banks.alior" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Alior Banku</span></a>
+            </article>
+          </div>
+        </div>
+
+        <!-- Sekcja B -->
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10" aria-labelledby="onb-h-b">
+          <div class="flex flex-col gap-2 @xl:flex-row @xl:items-end @xl:justify-between">
+            <div>
+              <h2 id="onb-h-b" class="font-display text-[1.75rem] font-medium leading-tight @xl:text-[2rem]">Powyżej 26 lat</h2>
+              <p class="mt-1 text-stone-600">Promocje dla osób, które mają ukończone 26 lat.</p>
+            </div>
+            <p class="text-sm font-semibold text-moss-700">6 banków, razem do 3&nbsp;305&nbsp;zł</p>
+          </div>
+
+          <div class="mt-6 grid gap-4 @xl:grid-cols-2 @3xl:grid-cols-3">
+            <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
+              <h3 class="text-lg font-bold">Bank Millennium</h3>
+              <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
+              <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">650&nbsp;zł</p>
+              <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
+              <a href="#" data-href-key="banks.millennium" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Banku Millennium</span></a>
+            </article>
+            <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
+              <h3 class="text-lg font-bold">VeloBank</h3>
+              <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
+              <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">600&nbsp;zł</p>
+              <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
+              <a href="#" data-href-key="banks.velobank" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w VeloBanku</span></a>
+            </article>
+            <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
+              <h3 class="text-lg font-bold">BNP Paribas</h3>
+              <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
+              <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">400&nbsp;zł</p>
+              <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
+              <a href="#" data-href-key="banks.bnp" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w BNP Paribas</span></a>
+            </article>
+            <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
+              <h3 class="text-lg font-bold">Santander</h3>
+              <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
+              <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">600&nbsp;zł</p>
+              <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
+              <a href="#" data-href-key="banks.santander" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Santanderze</span></a>
+            </article>
+            <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
+              <h3 class="text-lg font-bold">ING</h3>
+              <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
+              <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">500&nbsp;zł</p>
+              <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
+              <a href="#" data-href-key="banks.ing" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w ING</span></a>
+            </article>
+            <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
+              <h3 class="text-lg font-bold">Credit Agricole</h3>
+              <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
+              <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">555&nbsp;zł</p>
+              <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
+              <a href="#" data-href-key="banks.creditagricole" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Credit Agricole</span></a>
+            </article>
+          </div>
+
+          <p class="mt-6 max-w-[70ch] text-sm leading-relaxed text-stone-500">Kwoty to maksymalne premie z aktualnych promocji. Warunki i terminy ustala bank, więc przed założeniem konta przeczytaj regulamin promocji. Linki do banków są linkami polecającymi.</p>
+        </div>
+
+        <div class="onb-gate" data-unlock="3">
+          <form data-gate-form class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8" novalidate>
+            <h2 class="font-display text-2xl font-medium leading-tight">Otwórz Krok 3</h2>
+            <p class="mt-1 text-stone-600" data-gate-hint>Hasło do Kroku 3 podaję w materiałach do Kroku 2.</p>
+            <label for="onb-pass-3" class="mt-5 block text-sm font-semibold">Hasło do Kroku 3</label>
+            <div class="mt-2 flex flex-col gap-3 @xl:flex-row">
+              <input id="onb-pass-3" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="onb-pass-3-msg" class="min-h-[52px] w-full flex-1 rounded-xl border border-stone-300 bg-white px-4 text-base uppercase tracking-wider text-zinc-900 transition-colors focus:border-zinc-900">
+              <button type="submit" class="inline-flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-7 text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">Odblokuj Krok 3</button>
+            </div>
+            <p id="onb-pass-3-msg" data-gate-msg class="mt-2 text-sm font-medium text-orange-800 empty:hidden" role="status" aria-live="polite"></p>
+          </form>
+          <div data-gate-open class="flex flex-col gap-4 rounded-2xl border border-moss-100 bg-moss-50 p-5 @xl:flex-row @xl:items-center @xl:justify-between @xl:p-6" hidden>
+            <p class="flex items-center gap-3 font-semibold text-moss-700"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span data-gate-open-text>Krok 3 jest już otwarty.</span></p>
+            <a href="#krok-3" class="inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800">Przejdź do Kroku 3</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== KROK 3 ===================== -->
+      <section class="onb-view space-y-5" data-view="krok-3" aria-labelledby="onb-h-3" hidden>
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10">
+          <h1 id="onb-h-3" data-view-title tabindex="-1" class="text-balance font-display text-[2rem] font-medium leading-[1.08] tracking-[-0.01em] @xl:text-[2.5rem] @3xl:text-[2.875rem]">Krok 3. Konto partnera w eBrokerPartner</h1>
+          <p class="mt-4 max-w-[62ch] text-[1.0625rem] leading-relaxed text-stone-600">W eBrokerPartner polecasz produkty finansowe, na przykład konta i karty, a za każde skuteczne polecenie dostajesz prowizję. Konto partnera zakładasz raz, bez opłat.</p>
+
+          <div class="mt-6" data-video="krok3" data-title="Rejestracja w eBrokerPartner" data-optional></div>
+
+          <h2 class="mt-9 font-display text-2xl font-medium leading-tight">Jak się zarejestrować</h2>
+          <ol class="mt-5 space-y-4">
+            <li class="flex gap-4"><span class="grid h-8 w-8 flex-none place-items-center rounded-full bg-zinc-900 text-sm font-bold text-white onb-num-tab" aria-hidden="true">1</span><p class="pt-1 leading-relaxed"><span class="sr-only">1. </span>Kliknij przycisk poniżej. Formularz otworzy się w nowej karcie.</p></li>
+            <li class="flex gap-4"><span class="grid h-8 w-8 flex-none place-items-center rounded-full bg-zinc-900 text-sm font-bold text-white onb-num-tab" aria-hidden="true">2</span><p class="pt-1 leading-relaxed"><span class="sr-only">2. </span>Wypełnij formularz i potwierdź adres e-mail w wiadomości aktywacyjnej.</p></li>
+            <li class="flex gap-4"><span class="grid h-8 w-8 flex-none place-items-center rounded-full bg-zinc-900 text-sm font-bold text-white onb-num-tab" aria-hidden="true">3</span><p class="pt-1 leading-relaxed"><span class="sr-only">3. </span>Zaloguj się i uzupełnij dane do wypłaty prowizji.</p></li>
+            <li class="flex gap-4"><span class="grid h-8 w-8 flex-none place-items-center rounded-full bg-zinc-900 text-sm font-bold text-white onb-num-tab" aria-hidden="true">4</span><p class="pt-1 leading-relaxed"><span class="sr-only">4. </span>Wróć do tego panelu i wpisz hasło do Kroku 4.</p></li>
+          </ol>
+
+          <div class="mt-8">
+            <a href="#" data-href-key="ebroker" class="inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto">
+              Załóż konto w eBrokerPartner
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </a>
+            <p class="mt-3 text-sm text-stone-500">Rejestracja jest bezpłatna. Link jest linkiem polecającym.</p>
+          </div>
+        </div>
+
+        <div class="onb-gate" data-unlock="4">
+          <form data-gate-form class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8" novalidate>
+            <h2 class="font-display text-2xl font-medium leading-tight">Otwórz Krok 4</h2>
+            <p class="mt-1 text-stone-600" data-gate-hint>Hasło do Kroku 4 podaję w materiałach do Kroku 3. To samo hasło otwiera też Krok 5.</p>
+            <label for="onb-pass-4" class="mt-5 block text-sm font-semibold">Hasło do Kroku 4</label>
+            <div class="mt-2 flex flex-col gap-3 @xl:flex-row">
+              <input id="onb-pass-4" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="onb-pass-4-msg" class="min-h-[52px] w-full flex-1 rounded-xl border border-stone-300 bg-white px-4 text-base uppercase tracking-wider text-zinc-900 transition-colors focus:border-zinc-900">
+              <button type="submit" class="inline-flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-7 text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">Odblokuj Krok 4</button>
+            </div>
+            <p id="onb-pass-4-msg" data-gate-msg class="mt-2 text-sm font-medium text-orange-800 empty:hidden" role="status" aria-live="polite"></p>
+          </form>
+          <div data-gate-open class="flex flex-col gap-4 rounded-2xl border border-moss-100 bg-moss-50 p-5 @xl:flex-row @xl:items-center @xl:justify-between @xl:p-6" hidden>
+            <p class="flex items-center gap-3 font-semibold text-moss-700"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span data-gate-open-text>Kroki 4 i 5 są już otwarte.</span></p>
+            <a href="#krok-4" class="inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800">Przejdź do Kroku 4</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== KROK 4 ===================== -->
+      <section class="onb-view space-y-5" data-view="krok-4" aria-labelledby="onb-h-4" hidden>
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10">
+          <h1 id="onb-h-4" data-view-title tabindex="-1" class="text-balance font-display text-[2rem] font-medium leading-[1.08] tracking-[-0.01em] @xl:text-[2.5rem] @3xl:text-[2.875rem]">Krok 4. Akademia VIP</h1>
+          <p class="mt-4 max-w-[62ch] text-[1.0625rem] leading-relaxed text-stone-600">Dla osób, które chcą zbudować z poleceń stały dochód. Dostajesz pełny program Akademii Afiliacyjnej i moje wsparcie jako mentora.</p>
+
+          <div class="mt-6" data-video="krok4" data-title="Akademia VIP" data-optional></div>
+
+          <!-- EDYTUJ: dopasuj opis do aktualnej zawartości Akademii -->
+          <h2 class="mt-9 font-display text-2xl font-medium leading-tight">Co dostajesz</h2>
+          <div class="mt-5 grid gap-x-8 gap-y-6 @xl:grid-cols-2">
+            <div class="flex gap-4"><svg class="mt-0.5 flex-none text-zinc-900" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg><div><h3 class="font-semibold">Pełny program Akademii</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Szkolenia w stałej kolejności, od pierwszych poleceń do własnego systemu pozyskiwania klientów.</p></div></div>
+            <div class="flex gap-4"><svg class="mt-0.5 flex-none text-zinc-900" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg><div><h3 class="font-semibold">Automatyzacja</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Jak ułożyć proces tak, żeby działał bez ręcznego pisania do każdej osoby.</p></div></div>
+            <div class="flex gap-4"><svg class="mt-0.5 flex-none text-zinc-900" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><div><h3 class="font-semibold">Wsparcie mentora</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Kupujesz z moim numerem mentora, więc wiesz, do kogo pisać z pytaniami.</p></div></div>
+            <div class="flex gap-4"><svg class="mt-0.5 flex-none text-zinc-900" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><div><h3 class="font-semibold">Dostęp online</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Uczysz się na telefonie lub komputerze, w swoim tempie.</p></div></div>
+          </div>
+        </div>
+
+        <!-- Cena -->
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10" aria-labelledby="onb-h-price">
+          <h2 id="onb-h-price" class="font-display text-2xl font-medium leading-tight @xl:text-[1.875rem]">Twoja cena</h2>
+          <div class="mt-6 rounded-xl border border-stone-200 bg-stone-50 p-5 @xl:p-7">
+            <p class="text-stone-500">Cena regularna <del class="onb-num-tab ml-1 font-semibold text-stone-500 decoration-stone-400 decoration-2">3497.00 PLN</del></p>
+            <p class="mt-2"><span class="sr-only">Cena teraz: </span><span class="font-display text-[3rem] font-medium leading-none tracking-[-0.02em] text-zinc-900 onb-num-tab @xl:text-[3.75rem]">697.00 PLN</span></p>
+            <ul class="mt-6 flex flex-wrap gap-2" aria-label="Metody płatności">
+              <li class="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-800">PayU</li>
+              <li class="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-800">BLIK</li>
+              <li class="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-800">Karta</li>
+              <li class="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-800">PayPo</li>
+              <li class="rounded-lg border border-moss-100 bg-moss-50 px-3 py-1.5 text-sm font-semibold text-moss-700">RATY 0% (do 10 rat)</li>
+            </ul>
+          </div>
+
+          <div class="mt-6">
+            <a href="https://akademiaafiliacyjna.elms.pl/s/sprzedaz-mega-promocja.html?polecajacy=sroczynski.kuba" data-href-key="akademia" target="_blank" rel="sponsored noopener" class="inline-flex min-h-[60px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">
+              Przejdź do zamówienia Akademii VIP
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </a>
+            <p class="mt-3 text-center text-sm text-stone-500">Zamówienie składasz na bezpiecznej stronie Akademii Afiliacyjnej.</p>
+          </div>
+
+          <div class="mt-6 rounded-xl border-2 border-orange-600 bg-orange-50 p-5 @xl:p-6" role="note">
+            <p class="font-semibold leading-relaxed text-zinc-900">⚠️ WAŻNE: Podczas składania zamówienia, w polu 'Podaj nr ID swojego mentora od którego kupujesz Akademię *' musisz wpisać: <span class="onb-num-tab whitespace-nowrap rounded-md bg-white px-2 py-0.5 font-bold text-orange-900 ring-1 ring-orange-200">833681</span></p>
+            <button type="button" data-copy="833681" class="mt-4 inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-orange-900 transition-colors hover:border-orange-500">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <span data-copy-label>Kopiuj numer 833681</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Downsell -->
+        <div class="rounded-2xl border-2 border-zinc-900 bg-[#F1EFE8] p-6 shadow-sm @xl:p-10" aria-labelledby="onb-h-down">
+          <h2 id="onb-h-down" class="max-w-[24ch] text-balance font-display text-[1.75rem] font-semibold leading-[1.12] @xl:text-[2.25rem]">WOLISZ NAJPIERW PRZETESTOWAĆ TEN MODEL BIZNESOWY?</h2>
+          <p class="mt-4 max-w-[60ch] text-[1.0625rem] leading-relaxed text-zinc-700">Nie musisz inwestować 697 zł w pełną automatyzację, żeby zdobyć pierwszych klientów. Odbierz surowe skrypty i przetestuj darmowy ruch za ułamek ceny.</p>
+          <a href="#krok-5" class="mt-7 inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-4 text-center text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto @xl:px-8">Wybieram Plan Startowy (69,70 zł) i zaczynam od podstaw →</a>
+        </div>
+      </section>
+
+      <!-- ===================== KROK 5 ===================== -->
+      <section class="onb-view space-y-5" data-view="krok-5" aria-labelledby="onb-h-5" hidden>
+
+        <!-- Zegar i miejsca -->
+        <div class="grid gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:grid-cols-2 @xl:gap-0 @xl:divide-x @xl:divide-stone-200 @xl:p-0">
+          <div class="@xl:p-6">
+            <p class="text-sm font-medium text-stone-600" id="onb-timer-label">Oferta wygasa za</p>
+            <p class="mt-1 font-display text-[2.75rem] font-medium leading-none text-zinc-900 onb-num-tab" id="onb-timer" role="timer" aria-labelledby="onb-timer-label">10:00</p>
+          </div>
+          <div class="@xl:p-6">
+            <p class="text-sm font-medium text-stone-600">Zajęte miejsca</p>
+            <p class="mt-1 font-display text-[2.75rem] font-medium leading-none text-zinc-900 onb-num-tab"><span id="onb-seats">103</span><span class="text-stone-400">/<span id="onb-seats-total">110</span></span></p>
+            <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-stone-200" aria-hidden="true"><div id="onb-seats-bar" class="h-full rounded-full bg-zinc-900 transition-[width] duration-700" style="width:93.6%"></div></div>
+            <p id="onb-seats-live" class="sr-only" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10">
+          <h1 id="onb-h-5" data-view-title tabindex="-1" class="text-balance font-display text-[2rem] font-medium leading-[1.08] tracking-[-0.01em] @xl:text-[2.5rem] @3xl:text-[2.875rem]">Krok 5. Plan Startowy</h1>
+          <p class="mt-4 max-w-[62ch] text-[1.0625rem] leading-relaxed text-stone-600">Surowe skrypty i gotowy układ darmowego ruchu w jednym pliku PDF. Przetestujesz model biznesowy, zanim zainwestujesz więcej.</p>
+
+          <div class="mt-6" data-video="krok5" data-title="Plan Startowy" data-optional></div>
+
+          <div class="mt-7 flex flex-col gap-1">
+            <p class="font-display text-[3rem] font-medium leading-none tracking-[-0.02em] onb-num-tab @xl:text-[3.5rem]">69,70&nbsp;zł</p>
+            <p class="text-sm text-stone-500">Płatność jednorazowa. Dostęp od razu po opłaceniu.</p>
+          </div>
+
+          <div class="mt-6">
+            <a href="#" data-href-key="planStartowy" class="onb-planb-cta inline-flex min-h-[60px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-center text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">
+              <span data-cta-label>Kupuję Plan Startowy za 69,70 zł</span>
+            </a>
+            <div data-offer-expired class="rounded-xl border border-stone-300 bg-stone-50 p-5" hidden>
+              <p class="font-semibold leading-relaxed">Czas minął. Oferta wygasła. Jeśli nadal chcesz skorzystać, wyślij do mnie wiadomość.</p>
+              <a href="#" data-href-key="contact" data-link-type="contact" class="mt-4 inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800">Wyślij wiadomość</a>
+            </div>
+            <p class="mt-4 max-w-[70ch] text-sm leading-relaxed text-stone-500">Przycisk otwiera okienko płatności tylko raz. Plan Startowy to plik PDF dostarczany od razu po płatności. Składając zamówienie, zgadzasz się na natychmiastowe dostarczenie treści cyfrowej i przyjmujesz do wiadomości, że tracisz wtedy prawo do odstąpienia od umowy. Dlatego po zakupie nie ma zwrotów.</p>
+          </div>
+        </div>
+
+        <!-- Bonus -->
+        <div class="flex gap-4 rounded-2xl border-2 border-amber-400 bg-amber-50 p-5 shadow-sm @xl:p-7">
+          <p class="text-[1.0625rem] font-semibold leading-relaxed text-zinc-900">🎁 SUPER BONUS (Wartość 199 zł) - Twój całkowicie GRATIS: E-book Skalowanie Płatne (Meta &amp; TikTok Ads)</p>
+        </div>
+
+        <!-- Co jest w środku -->
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10" aria-labelledby="onb-h-inside">
+          <h2 id="onb-h-inside" class="font-display text-2xl font-medium leading-tight @xl:text-[1.875rem]">Co jest w środku</h2>
+          <p class="mt-2 max-w-[60ch] text-stone-600">Osiem rozdziałów w kolejności, w jakiej je wdrażasz.</p>
+          <!-- EDYTUJ: opisy rozdziałów -->
+          <ol class="mt-6 grid gap-px overflow-hidden rounded-xl border border-stone-200 bg-stone-200 @xl:grid-cols-2">
+            <li class="flex gap-4 bg-white p-5"><span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">1</span><div><h3 class="font-semibold">Ruch z OLX</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Jak pisać ogłoszenia, na które odpisują osoby szukające dodatkowego dochodu.</p></div></li>
+            <li class="flex gap-4 bg-white p-5"><span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">2</span><div><h3 class="font-semibold">Grupy FB</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Gdzie i jak publikować, żeby posty nie znikały po godzinie.</p></div></li>
+            <li class="flex gap-4 bg-white p-5"><span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">3</span><div><h3 class="font-semibold">Organiczny TikTok</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Proste formaty wideo, które nagrasz telefonem bez montażu.</p></div></li>
+            <li class="flex gap-4 bg-white p-5"><span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">4</span><div><h3 class="font-semibold">Proces łączenia źródeł</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Jak połączyć OLX, grupy i TikToka w jeden stały dopływ wiadomości.</p></div></li>
+            <li class="flex gap-4 bg-white p-5"><span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">5</span><div><h3 class="font-semibold">Gotowe skrypty odpowiedzi: kopiuj-wklej</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Odpowiedzi na najczęstsze pytania i wątpliwości, gotowe do wklejenia.</p></div></li>
+            <li class="flex gap-4 bg-white p-5"><span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">6</span><div><h3 class="font-semibold">Zasady bezpieczeństwa kont</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Czego unikać, żeby nie stracić dostępu do kont na platformach.</p></div></li>
+            <li class="flex gap-4 bg-white p-5"><span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">7</span><div><h3 class="font-semibold">Algorytmy OLX</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Co wpływa na widoczność ogłoszenia i kiedy je odświeżać.</p></div></li>
+            <li class="flex gap-4 bg-white p-5"><span class="font-display text-2xl leading-none text-stone-400 onb-num-tab" aria-hidden="true">8</span><div><h3 class="font-semibold">Lejek wiadomości Messenger</h3><p class="mt-1 text-sm leading-relaxed text-stone-600">Kolejność wiadomości od pierwszego kontaktu do kliknięcia w link.</p></div></li>
+          </ol>
+        </div>
+
+        <!-- Karuzela -->
+        <div class="rounded-2xl border border-stone-200 bg-white py-5 shadow-sm @xl:py-8" aria-labelledby="onb-h-peek">
+          <div class="flex flex-col gap-3 px-5 @xl:flex-row @xl:items-end @xl:justify-between @xl:px-8">
+            <div>
+              <h2 id="onb-h-peek" class="font-display text-2xl font-medium leading-tight @xl:text-[1.875rem]">Zajrzyj do środka</h2>
+              <p class="mt-1 text-sm text-stone-600">Najedź kursorem albo przytrzymaj palcem, żeby zatrzymać przewijanie.</p>
+            </div>
+            <button type="button" data-marquee-toggle="onb-marquee" aria-pressed="false" class="inline-flex min-h-[44px] cursor-pointer items-center gap-2 self-start rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 transition-colors hover:border-stone-400 @xl:self-auto">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+              <span data-label>Zatrzymaj przewijanie</span>
+            </button>
+          </div>
+          <div id="onb-marquee" class="onb-marquee mt-6">
+            <div class="onb-marquee-track py-1">
+              <!-- EDYTUJ: podmień src na własne zrzuty ekranu (proporcje 16:11) -->
+              <figure class="w-64 flex-none @xl:w-80"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22440%22%20viewBox%3D%220%200%20640%20440%22%3E%3Crect%20width%3D%22640%22%20height%3D%22440%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%2224%22%20y%3D%2224%22%20width%3D%22592%22%20height%3D%22392%22%20rx%3D%2214%22%20fill%3D%22none%22%20stroke%3D%22%23D6D3CB%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%228%208%22%2F%3E%3Ctext%20x%3D%22320%22%20y%3D%22228%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2230%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EPodgl%C4%85d%201%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Podgląd materiału 1" width="640" height="440" loading="lazy" class="aspect-[16/11] w-full rounded-xl border border-stone-200 object-cover"></figure>
+              <figure class="w-64 flex-none @xl:w-80"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22440%22%20viewBox%3D%220%200%20640%20440%22%3E%3Crect%20width%3D%22640%22%20height%3D%22440%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%2224%22%20y%3D%2224%22%20width%3D%22592%22%20height%3D%22392%22%20rx%3D%2214%22%20fill%3D%22none%22%20stroke%3D%22%23D6D3CB%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%228%208%22%2F%3E%3Ctext%20x%3D%22320%22%20y%3D%22228%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2230%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EPodgl%C4%85d%202%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Podgląd materiału 2" width="640" height="440" loading="lazy" class="aspect-[16/11] w-full rounded-xl border border-stone-200 object-cover"></figure>
+              <figure class="w-64 flex-none @xl:w-80"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22440%22%20viewBox%3D%220%200%20640%20440%22%3E%3Crect%20width%3D%22640%22%20height%3D%22440%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%2224%22%20y%3D%2224%22%20width%3D%22592%22%20height%3D%22392%22%20rx%3D%2214%22%20fill%3D%22none%22%20stroke%3D%22%23D6D3CB%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%228%208%22%2F%3E%3Ctext%20x%3D%22320%22%20y%3D%22228%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2230%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EPodgl%C4%85d%203%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Podgląd materiału 3" width="640" height="440" loading="lazy" class="aspect-[16/11] w-full rounded-xl border border-stone-200 object-cover"></figure>
+              <figure class="w-64 flex-none @xl:w-80"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22440%22%20viewBox%3D%220%200%20640%20440%22%3E%3Crect%20width%3D%22640%22%20height%3D%22440%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%2224%22%20y%3D%2224%22%20width%3D%22592%22%20height%3D%22392%22%20rx%3D%2214%22%20fill%3D%22none%22%20stroke%3D%22%23D6D3CB%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%228%208%22%2F%3E%3Ctext%20x%3D%22320%22%20y%3D%22228%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2230%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EPodgl%C4%85d%204%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Podgląd materiału 4" width="640" height="440" loading="lazy" class="aspect-[16/11] w-full rounded-xl border border-stone-200 object-cover"></figure>
+              <figure class="w-64 flex-none @xl:w-80"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22440%22%20viewBox%3D%220%200%20640%20440%22%3E%3Crect%20width%3D%22640%22%20height%3D%22440%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%2224%22%20y%3D%2224%22%20width%3D%22592%22%20height%3D%22392%22%20rx%3D%2214%22%20fill%3D%22none%22%20stroke%3D%22%23D6D3CB%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%228%208%22%2F%3E%3Ctext%20x%3D%22320%22%20y%3D%22228%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2230%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EPodgl%C4%85d%205%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Podgląd materiału 5" width="640" height="440" loading="lazy" class="aspect-[16/11] w-full rounded-xl border border-stone-200 object-cover"></figure>
+              <figure class="w-64 flex-none @xl:w-80"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22440%22%20viewBox%3D%220%200%20640%20440%22%3E%3Crect%20width%3D%22640%22%20height%3D%22440%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%2224%22%20y%3D%2224%22%20width%3D%22592%22%20height%3D%22392%22%20rx%3D%2214%22%20fill%3D%22none%22%20stroke%3D%22%23D6D3CB%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%228%208%22%2F%3E%3Ctext%20x%3D%22320%22%20y%3D%22228%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2230%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EPodgl%C4%85d%206%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Podgląd materiału 6" width="640" height="440" loading="lazy" class="aspect-[16/11] w-full rounded-xl border border-stone-200 object-cover"></figure>
+              <figure class="w-64 flex-none @xl:w-80"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22440%22%20viewBox%3D%220%200%20640%20440%22%3E%3Crect%20width%3D%22640%22%20height%3D%22440%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%2224%22%20y%3D%2224%22%20width%3D%22592%22%20height%3D%22392%22%20rx%3D%2214%22%20fill%3D%22none%22%20stroke%3D%22%23D6D3CB%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%228%208%22%2F%3E%3Ctext%20x%3D%22320%22%20y%3D%22228%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2230%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EPodgl%C4%85d%207%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Podgląd materiału 7" width="640" height="440" loading="lazy" class="aspect-[16/11] w-full rounded-xl border border-stone-200 object-cover"></figure>
+              <figure class="w-64 flex-none @xl:w-80"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22440%22%20viewBox%3D%220%200%20640%20440%22%3E%3Crect%20width%3D%22640%22%20height%3D%22440%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%2224%22%20y%3D%2224%22%20width%3D%22592%22%20height%3D%22392%22%20rx%3D%2214%22%20fill%3D%22none%22%20stroke%3D%22%23D6D3CB%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%228%208%22%2F%3E%3Ctext%20x%3D%22320%22%20y%3D%22228%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2230%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EPodgl%C4%85d%208%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Podgląd materiału 8" width="640" height="440" loading="lazy" class="aspect-[16/11] w-full rounded-xl border border-stone-200 object-cover"></figure>
+            </div>
+          </div>
+          <div class="mt-7 px-5 @xl:px-8">
+            <a href="#" data-href-key="planStartowy" class="onb-planb-cta inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-center text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto">
+              <span data-cta-label>Kupuję Plan Startowy za 69,70 zł</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- FAQ zakupu -->
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10" aria-labelledby="onb-h-pdf">
+          <h2 id="onb-h-pdf" class="font-display text-2xl font-medium leading-tight @xl:text-[1.875rem]">Pytania o zakup PDF</h2>
+          <div class="mt-5 divide-y divide-stone-200 border-y border-stone-200">
+            <details class="onb-faq">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">W jakiej formie dostanę materiały?<svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Jako plik PDF. Otworzysz go na telefonie, tablecie i komputerze, bez dodatkowych aplikacji.</p>
+            </details>
+            <details class="onb-faq">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">Kiedy dostanę dostęp?<svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Zaraz po opłaceniu zamówienia. Link do pobrania przychodzi na e-mail podany przy płatności. Jeśli go nie widzisz, sprawdź foldery Oferty i Spam.</p>
+            </details>
+            <details class="onb-faq">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">Czy to abonament?<svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Nie. Płacisz raz 69,70 zł i plik zostaje u Ciebie.</p>
+            </details>
+            <details class="onb-faq">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">Czy e-book w prezencie jest w cenie?<svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Tak. E-book Skalowanie Płatne dostajesz razem z Planem Startowym, bez dopłaty.</p>
+            </details>
+            <details class="onb-faq">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">Czy mogę zwrócić PDF?<svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Plik dostajesz od razu po zakupie, a zamawiając, zgadzasz się na natychmiastowe dostarczenie. Dlatego po zakupie nie ma zwrotów.</p>
+            </details>
+            <details class="onb-faq">
+              <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">Mam problem z płatnością. Co robić?<svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Napisz do mnie, a pomogę dokończyć zamówienie. Link do kontaktu jest na dole panelu.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== KROK ZABLOKOWANY ===================== -->
+      <section class="onb-view" data-view="locked" aria-labelledby="onb-h-locked" hidden>
+        <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm @xl:p-10">
+          <span class="grid h-12 w-12 place-items-center rounded-xl bg-zinc-900 text-white" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          </span>
+          <h1 id="onb-h-locked" data-view-title tabindex="-1" class="mt-5 font-display text-[2rem] font-medium leading-tight" data-locked-title>Ten krok jest jeszcze zamknięty</h1>
+          <p class="mt-3 max-w-[60ch] text-stone-600" data-locked-text>Otworzysz go hasłem z poprzedniego kroku.</p>
+          <a href="#krok-1" data-locked-back class="mt-6 inline-flex min-h-[52px] cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-7 py-3 text-base font-semibold text-white transition-colors hover:bg-zinc-800"><span data-label>Przejdź do Kroku 1</span></a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="mt-8 border-t border-stone-200 pt-6 text-sm leading-relaxed text-stone-500">
+    <div class="flex flex-col gap-3 @3xl:flex-row @3xl:items-start @3xl:justify-between">
+      <p class="max-w-[75ch]">Linki do banków i partnerów są linkami polecającymi. Mogę otrzymać za nie wynagrodzenie, a Ty nie płacisz przez to więcej. Treści w panelu to ogólne informacje, a nie porada finansowa ani podatkowa.</p>
+      <a href="#" data-href-key="contact" data-link-type="contact" class="inline-flex min-h-[44px] flex-none items-center font-semibold text-zinc-900 underline decoration-stone-300 underline-offset-4 hover:decoration-zinc-900">Napisz do mnie</a>
+    </div>
+  </footer>
+
+</div>
+</div>
+</div>
+
+<script>
+  /* ================================================================
+     USTAWIENIA PANELU  (tu zmieniasz linki, wideo i hasła)
+     ================================================================ */
+  window.ONB_CONFIG = {
+    /* Zmień nazwę, gdy chcesz wyzerować postęp wszystkim odwiedzającym. */
+    storageKey: 'onb_panel_v1',
+
+    /* Hasła do kroków. Wielkość liter i spacje nie mają znaczenia.
+       Możesz wpisać hasło wprost, np. 2: 'MOJEHASLO'.
+       Bezpieczniej wpisać jego skrót: otwórz konsolę przeglądarki na stronie
+       z panelem, wpisz Onboarding.hash('MOJEHASLO') i wklej wynik.
+       Domyślne hasła: Krok 2 POLECAM, Krok 3 KONTA, Krok 4 i 5 PARTNER. */
+    passwords: {
+      2: 'hash:r46hmi8f9u',
+      3: 'hash:1gwapx94886',
+      4: 'hash:mzy8xe0duj'
+    },
+
+    /* Podpowiedzi nad polem hasła. */
+    hints: {
+      2: 'Hasło do Kroku 2 podaję na końcu wideo w Kroku 1.',
+      3: 'Hasło do Kroku 3 podaję w materiałach do Kroku 2.',
+      4: 'Hasło do Kroku 4 podaję w materiałach do Kroku 3. To samo hasło otwiera też Krok 5.'
+    },
+
+    /* Wideo: wklej link do YouTube, Vimeo albo pliku .mp4.
+       Puste pole w krokach 2 do 5 ukrywa miejsce na wideo. */
+    videos: {
+      start: '',
+      krok1: '',
+      krok2: '',
+      krok3: '',
+      krok4: '',
+      krok5: ''
+    },
+
+    links: {
+      m2m: '',
+      ebroker: '',
+      akademia: 'https://akademiaafiliacyjna.elms.pl/s/sprzedaz-mega-promocja.html?polecajacy=sroczynski.kuba',
+      planStartowy: '',
+      contact: '',
+      banks: {
+        mbank: '',
+        pekao: '',
+        pkobp: '',
+        alior: '',
+        millennium: '',
+        velobank: '',
+        bnp: '',
+        santander: '',
+        ing: '',
+        creditagricole: ''
+      }
+    },
+
+    /* Plan Startowy: zegar liczy od pierwszego otwarcia Kroku 5.
+       seatsSchedule: [sekunda od startu, zajęte miejsca]. */
+    planStartowy: {
+      minutes: 10,
+      seatsTotal: 110,
+      seatsSchedule: [[0, 103], [30, 104], [270, 105], [420, 106], [540, 107]]
+    }
+  };
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  var C = window.ONB_CONFIG || {};
+  var root = document.getElementById('onb-app');
+  if (!root) return;
+
+  function $(sel, ctx) { return (ctx || root).querySelector(sel); }
+  function $$(sel, ctx) { return Array.prototype.slice.call((ctx || root).querySelectorAll(sel)); }
+  var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var KEY = C.storageKey || 'onb_panel_v1';
+
+  /* ---------- Pamięć w przeglądarce ---------- */
+  var memory = {};
+  function load(name, fallback) {
+    try {
+      var raw = window.localStorage.getItem(KEY + ':' + name);
+      return raw === null ? fallback : JSON.parse(raw);
+    } catch (e) {
+      return Object.prototype.hasOwnProperty.call(memory, name) ? memory[name] : fallback;
+    }
+  }
+  function save(name, value) {
+    memory[name] = value;
+    try { window.localStorage.setItem(KEY + ':' + name, JSON.stringify(value)); } catch (e) { /* tryb prywatny */ }
+  }
+  function forget(name) {
+    delete memory[name];
+    try { window.localStorage.removeItem(KEY + ':' + name); } catch (e) { /* tryb prywatny */ }
+  }
+
+  /* ---------- Hasła ---------- */
+  function cyrb53(str, seed) {
+    var h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for (var i = 0, ch; i < str.length; i++) {
+      ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+    h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+    h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+  }
+  function normalizePassword(value) { return String(value || '').normalize('NFC').replace(/\s+/g, '').toUpperCase(); }
+  function hashPassword(value) { return 'hash:' + cyrb53(normalizePassword(value), 7); }
+  function passwordMatches(step, value) {
+    var expected = (C.passwords || {})[step];
+    if (!expected || !normalizePassword(value)) return false;
+    expected = String(expected);
+    return expected.indexOf('hash:') === 0
+      ? hashPassword(value) === expected
+      : normalizePassword(value) === normalizePassword(expected);
+  }
+
+  /* ---------- Stan kroków ---------- */
+  var unlocked = load('unlocked', {}) || {};
+  function isOpen(step) { return step <= 1 || unlocked[step] === true; }
+  function unlock(step) {
+    unlocked[step] = true;
+    if (step === 4) unlocked[5] = true;
+    save('unlocked', unlocked);
+  }
+  function furthestOpen() {
+    var last = 1;
+    for (var s = 1; s <= 5; s++) if (isOpen(s)) last = s;
+    return last;
+  }
+  function lockedMessage(step) {
+    if (step === 5) return 'Krok 5 otwiera się razem z Krokiem 4. Hasło znajdziesz w Kroku 3.';
+    return 'Krok ' + step + ' jest zamknięty. Hasło znajdziesz w Kroku ' + (step - 1) + '.';
+  }
+
+  /* ---------- Widoki ---------- */
+  var VIEW_STEP = { 'start': 0, 'krok-1': 1, 'krok-2': 2, 'krok-3': 3, 'krok-4': 4, 'krok-5': 5 };
+  var currentView = null;
+
+  function viewFromHash() {
+    var h = (window.location.hash || '').replace(/^#/, '');
+    return Object.prototype.hasOwnProperty.call(VIEW_STEP, h) ? h : null;
+  }
+
+  function scrollAppIntoView(force) {
+    var top = document.getElementById('onb-top');
+    if (!top) return;
+    var r = top.getBoundingClientRect();
+    if (force || r.top < -8 || r.top > window.innerHeight * 0.6) {
+      top.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+
+  function fillLocked(step) {
+    var sec = $('[data-view="locked"]');
+    $('[data-locked-title]', sec).textContent = 'Krok ' + step + ' jest jeszcze zamknięty';
+    $('[data-locked-text]', sec).textContent = step === 5
+      ? 'Krok 5 otwiera się razem z Krokiem 4. Hasło znajdziesz w Kroku 3.'
+      : 'Otworzysz go hasłem, które znajdziesz w Kroku ' + (step - 1) + '.';
+    var back = $('[data-locked-back]', sec);
+    var target = furthestOpen();
+    back.setAttribute('href', '#krok-' + target);
+    $('[data-label]', back).textContent = 'Przejdź do Kroku ' + target;
+  }
+
+  function show(view, opts) {
+    opts = opts || {};
+    var step = VIEW_STEP[view];
+    var target = isOpen(step) ? view : 'locked';
+    if (target === 'locked') fillLocked(step);
+    $$('.onb-view').forEach(function (sec) {
+      var on = sec.getAttribute('data-view') === target;
+      sec.hidden = !on;
+      sec.classList.remove('onb-enter');
+      if (on && opts.animate && !reduceMotion) {
+        void sec.offsetWidth;
+        sec.classList.add('onb-enter');
+      }
+    });
+    currentView = view;
+    render();
+    if (target === 'krok-5') startOffer();
+    if (opts.scroll) scrollAppIntoView(false);
+    if (opts.focus) {
+      var title = $('[data-view="' + target + '"] [data-view-title]');
+      if (title) { try { title.focus({ preventScroll: true }); } catch (e) { title.focus(); } }
+    }
+  }
+
+  function go(view) {
+    if (window.location.hash === '#' + view) show(view, { animate: true, scroll: true, focus: true });
+    else window.location.hash = view;
+  }
+
+  window.addEventListener('hashchange', function () {
+    var view = viewFromHash();
+    if (view) show(view, { animate: true, scroll: true, focus: true });
+  });
+
+  /* ---------- Nawigacja i postęp ---------- */
+  var navMsg = document.getElementById('onb-nav-msg');
+  function setNavMessage(text) { if (navMsg) navMsg.textContent = text; }
+
+  function nodeFor(step) {
+    var a = $('.onb-nav[data-step="' + step + '"]');
+    return a ? $('.onb-node', a) : null;
+  }
+  function animateNode(step, cls) {
+    var node = nodeFor(step);
+    if (!node || reduceMotion) return;
+    node.classList.remove(cls);
+    void node.offsetWidth;
+    node.classList.add(cls);
+    setTimeout(function () { node.classList.remove(cls); }, 700);
+  }
+
+  function render() {
+    var count = 0;
+    for (var s = 1; s <= 5; s++) if (isOpen(s)) count++;
+
+    $$('.onb-nav').forEach(function (a) {
+      var step = Number(a.getAttribute('data-step'));
+      var open = isOpen(step);
+      a.setAttribute('data-state', open ? 'open' : 'locked');
+      if (open) a.removeAttribute('aria-disabled'); else a.setAttribute('aria-disabled', 'true');
+      var state = $('.onb-state', a);
+      if (state) state.textContent = open ? ' (otwarty)' : ' (zamknięty)';
+      if (a.getAttribute('data-view') === currentView) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+
+    var items = $$('.onb-rail > li');
+    items.forEach(function (li, i) {
+      var next = items[i + 1];
+      if (!next) return;
+      var nextStep = Number($('.onb-nav', next).getAttribute('data-step'));
+      li.classList.toggle('is-filled', isOpen(nextStep));
+    });
+
+    var label = document.getElementById('onb-progress-label');
+    if (label) label.textContent = count + ' z 5';
+    var bar = document.getElementById('onb-progress-bar');
+    if (bar) bar.style.width = (count / 5 * 100) + '%';
+
+    $$('[data-path-step]').forEach(function (li) {
+      var step = Number(li.getAttribute('data-path-step'));
+      var status = $('.onb-path-status', li);
+      if (!status) return;
+      status.innerHTML = '';
+      if (isOpen(step)) {
+        var link = document.createElement('a');
+        link.href = '#krok-' + step;
+        link.className = 'inline-flex min-h-[40px] items-center gap-1.5 text-moss-700 underline decoration-moss-100 underline-offset-4 hover:decoration-moss-700';
+        link.textContent = 'Otwarty, przejdź';
+        var sr = document.createElement('span');
+        sr.className = 'sr-only';
+        sr.textContent = ' do Kroku ' + step;
+        link.appendChild(sr);
+        status.appendChild(link);
+      } else {
+        var closed = document.createElement('span');
+        closed.className = 'text-stone-500';
+        closed.textContent = 'Zamknięty';
+        status.appendChild(closed);
+      }
+    });
+
+    $$('.onb-gate').forEach(function (gate) {
+      var open = isOpen(Number(gate.getAttribute('data-unlock')));
+      $('[data-gate-form]', gate).hidden = open;
+      $('[data-gate-open]', gate).hidden = !open;
+    });
+  }
+
+  $$('.onb-nav').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var step = Number(a.getAttribute('data-step'));
+      if (!isOpen(step)) {
+        e.preventDefault();
+        setNavMessage(lockedMessage(step));
+        animateNode(step, 'onb-nudge');
+      } else {
+        setNavMessage('');
+      }
+    });
+  });
+
+  /* ---------- Formularze haseł ---------- */
+  $$('.onb-gate').forEach(function (gate) {
+    var step = Number(gate.getAttribute('data-unlock'));
+    var form = $('[data-gate-form]', gate);
+    var input = $('input', form);
+    var msg = $('[data-gate-msg]', form);
+    var hint = $('[data-gate-hint]', gate);
+    if (hint && C.hints && C.hints[step]) hint.textContent = C.hints[step];
+
+    input.addEventListener('input', function () {
+      if (input.getAttribute('aria-invalid') === 'true') {
+        input.removeAttribute('aria-invalid');
+        input.classList.remove('border-orange-600');
+        msg.textContent = '';
+      }
+    });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var value = input.value;
+      if (!normalizePassword(value)) {
+        msg.textContent = 'Wpisz hasło, żeby otworzyć Krok ' + step + '.';
+        input.setAttribute('aria-invalid', 'true');
+        input.classList.add('border-orange-600');
+        input.focus();
+        return;
+      }
+      if (!passwordMatches(step, value)) {
+        msg.textContent = 'To hasło nie pasuje. Sprawdź je jeszcze raz w materiałach z tego kroku i przepisz dokładnie.';
+        input.setAttribute('aria-invalid', 'true');
+        input.classList.add('border-orange-600');
+        input.select();
+        return;
+      }
+      input.value = '';
+      msg.textContent = '';
+      unlock(step);
+      $('[data-gate-open-text]', gate).textContent = step === 4 ? 'Gotowe. Kroki 4 i 5 są otwarte.' : 'Gotowe. Krok ' + step + ' jest otwarty.';
+      render();
+      animateNode(step, 'onb-pop');
+      if (step === 4) animateNode(5, 'onb-pop');
+      setNavMessage('');
+      setTimeout(function () { go('krok-' + step); }, reduceMotion ? 250 : 950);
+    });
+  });
+
+  /* ---------- Linki z ustawień ---------- */
+  function getPath(obj, path) {
+    return path.split('.').reduce(function (o, k) { return o && typeof o === 'object' ? o[k] : undefined; }, obj);
+  }
+  function flash(el, text) {
+    var note = el.nextElementSibling && el.nextElementSibling.hasAttribute('data-flash') ? el.nextElementSibling : null;
+    if (!note) {
+      note = document.createElement('p');
+      note.setAttribute('data-flash', '');
+      note.setAttribute('role', 'status');
+      note.className = 'mt-2 text-sm font-medium text-orange-800';
+      el.parentNode.insertBefore(note, el.nextSibling);
+    }
+    note.textContent = text;
+  }
+
+  $$('[data-href-key]').forEach(function (a) {
+    var key = a.getAttribute('data-href-key');
+    var url = getPath(C.links || {}, key);
+    if (url) {
+      a.setAttribute('href', url);
+      if (!/^(mailto|tel|sms):/i.test(url)) {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', a.getAttribute('data-link-type') === 'contact' ? 'noopener' : 'sponsored noopener');
+      }
+      a.removeAttribute('data-missing');
+    } else {
+      a.setAttribute('data-missing', 'true');
+      a.addEventListener('click', function (e) {
+        if (a.getAttribute('data-missing') !== 'true') return;
+        e.preventDefault();
+        flash(a, 'Ten link jest chwilowo niedostępny. Napisz do mnie, a podeślę go.');
+      });
+      if (window.console && console.warn) console.warn('[Panel wdrożeniowy] Brak linku: ONB_CONFIG.links.' + key);
+    }
+  });
+
+  /* ---------- Wideo (ładuje się dopiero po kliknięciu) ---------- */
+  function toEmbed(url) {
+    var m = url.match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/);
+    if (m) return { type: 'iframe', src: 'https://www.youtube-nocookie.com/embed/' + m[1] + '?autoplay=1&rel=0' };
+    m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if (m) return { type: 'iframe', src: 'https://player.vimeo.com/video/' + m[1] + '?autoplay=1' };
+    if (/\.(mp4|webm)(\?|#|$)/i.test(url)) return { type: 'video', src: url };
+    return { type: 'iframe', src: url };
+  }
+
+  $$('[data-video]').forEach(function (box) {
+    var url = (C.videos || {})[box.getAttribute('data-video')];
+    var title = box.getAttribute('data-title') || 'Wideo';
+    if (!url) {
+      if (box.hasAttribute('data-optional')) box.hidden = true;
+      return;
+    }
+    box.hidden = false;
+    box.innerHTML = '';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'group relative grid aspect-video w-full cursor-pointer place-items-center overflow-hidden rounded-xl bg-zinc-900 text-white';
+    btn.setAttribute('aria-label', 'Odtwórz wideo: ' + title);
+    btn.innerHTML =
+      '<span class="grid h-16 w-16 place-items-center rounded-full bg-white text-zinc-900 shadow-sm transition-transform duration-200 group-hover:scale-105" aria-hidden="true">' +
+      '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></span>' +
+      '<span class="absolute bottom-4 left-4 right-4 text-left text-sm font-semibold text-zinc-200"></span>';
+    btn.lastChild.textContent = title;
+    btn.addEventListener('click', function () {
+      var embed = toEmbed(url);
+      var frame = document.createElement('div');
+      frame.className = 'relative aspect-video w-full overflow-hidden rounded-xl bg-zinc-900';
+      var media;
+      if (embed.type === 'video') {
+        media = document.createElement('video');
+        media.src = embed.src;
+        media.controls = true;
+        media.autoplay = true;
+        media.playsInline = true;
+      } else {
+        media = document.createElement('iframe');
+        media.src = embed.src;
+        media.title = title;
+        media.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        media.allowFullscreen = true;
+      }
+      media.className = 'absolute inset-0 h-full w-full';
+      frame.appendChild(media);
+      box.replaceChild(frame, btn);
+    });
+    box.appendChild(btn);
+  });
+
+  /* ---------- Przewijanie ---------- */
+  $$('[data-scroll-to]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var target = document.getElementById(btn.getAttribute('data-scroll-to'));
+      if (target) target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+
+  /* ---------- Kopiowanie numeru mentora ---------- */
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  $$('[data-copy]').forEach(function (btn) {
+    var label = $('[data-copy-label]', btn);
+    var original = label ? label.textContent : '';
+    btn.addEventListener('click', function () {
+      var text = btn.getAttribute('data-copy');
+      function done(ok) {
+        if (!label) return;
+        label.textContent = ok ? 'Skopiowano: ' + text : 'Zaznacz numer i skopiuj go ręcznie';
+        setTimeout(function () { label.textContent = original; }, 2400);
+      }
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(fallbackCopy(text)); });
+      } else {
+        done(fallbackCopy(text));
+      }
+    });
+  });
+
+  /* ---------- Plan Startowy: zegar, miejsca, przycisk jednorazowy ---------- */
+  var P = C.planStartowy || {};
+  var offerInterval = null;
+  var lastSeats = null;
+  var timerEl = document.getElementById('onb-timer');
+  var seatsEl = document.getElementById('onb-seats');
+  var seatsTotalEl = document.getElementById('onb-seats-total');
+  var seatsBar = document.getElementById('onb-seats-bar');
+  var seatsLive = document.getElementById('onb-seats-live');
+  var seatsTotal = P.seatsTotal || 110;
+  var schedule = P.seatsSchedule || [[0, 103]];
+  if (seatsTotalEl) seatsTotalEl.textContent = seatsTotal;
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function seatsAt(elapsedSec) {
+    var seats = schedule[0][1];
+    for (var i = 0; i < schedule.length; i++) if (elapsedSec >= schedule[i][0]) seats = schedule[i][1];
+    return seats;
+  }
+  function paintSeats(seats) {
+    if (seats === lastSeats) return;
+    var first = lastSeats === null;
+    lastSeats = seats;
+    if (seatsEl) seatsEl.textContent = seats;
+    if (seatsBar) seatsBar.style.width = Math.min(100, seats / seatsTotal * 100) + '%';
+    if (!first && seatsLive) seatsLive.textContent = 'Zajęte miejsca: ' + seats + ' ze ' + seatsTotal + '.';
+  }
+  function expireOffer() {
+    $$('.onb-planb-cta').forEach(function (cta) { cta.style.display = 'none'; });
+    $$('[data-offer-expired]').forEach(function (box) { box.hidden = false; });
+    var label = document.getElementById('onb-timer-label');
+    if (label) label.textContent = 'Oferta wygasła';
+    if (timerEl) timerEl.textContent = '00:00';
+  }
+  function startOffer() {
+    if (offerInterval) return;
+    var minutes = Number(P.minutes) || 10;
+    var deadline = Number(load('offerDeadline', 0));
+    if (!deadline) {
+      deadline = Date.now() + minutes * 60000;
+      save('offerDeadline', deadline);
+    }
+    var startedAt = deadline - minutes * 60000;
+    function tick() {
+      var now = Date.now();
+      var left = Math.max(0, deadline - now);
+      var secs = Math.ceil(left / 1000);
+      if (timerEl) timerEl.textContent = pad(Math.floor(secs / 60)) + ':' + pad(secs % 60);
+      paintSeats(seatsAt((now - startedAt) / 1000));
+      if (left <= 0) {
+        clearInterval(offerInterval);
+        expireOffer();
+      }
+    }
+    tick();
+    if (Date.now() < deadline) offerInterval = setInterval(tick, 1000);
+    else offerInterval = -1;
+  }
+
+  $$('.onb-planb-cta').forEach(function (cta) {
+    cta.addEventListener('click', function (e) {
+      if (cta.getAttribute('data-missing') === 'true') return;
+      if (cta.getAttribute('data-used') === 'true') { e.preventDefault(); return; }
+      $$('.onb-planb-cta').forEach(function (b) {
+        b.setAttribute('data-used', 'true');
+        b.classList.add('opacity-50', 'pointer-events-none');
+        b.setAttribute('aria-disabled', 'true');
+        b.setAttribute('tabindex', '-1');
+        var text = $('[data-cta-label]', b) || b;
+        text.textContent = 'LINK ZUŻYTY (Okienko płatności otwarte)';
+      });
+    });
+  });
+
+  /* ---------- Karuzela ---------- */
+  $$('.onb-marquee').forEach(function (marquee) {
+    var track = $('.onb-marquee-track', marquee);
+    if (track && !track.hasAttribute('data-cloned')) {
+      Array.prototype.slice.call(track.children).forEach(function (item) {
+        var clone = item.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        clone.classList.add('onb-clone');
+        $$('img', clone).forEach(function (img) { img.alt = ''; });
+        track.appendChild(clone);
+      });
+      track.setAttribute('data-cloned', '');
+    }
+    function hold() { marquee.classList.add('is-held'); }
+    function release() { marquee.classList.remove('is-held'); }
+    marquee.addEventListener('touchstart', hold, { passive: true });
+    marquee.addEventListener('touchend', release);
+    marquee.addEventListener('touchcancel', release);
+
+    var toggle = $('[data-marquee-toggle="' + marquee.id + '"]');
+    if (toggle) {
+      toggle.addEventListener('click', function () {
+        var paused = marquee.classList.toggle('is-paused');
+        toggle.setAttribute('aria-pressed', String(paused));
+        $('[data-label]', toggle).textContent = paused ? 'Wznów przewijanie' : 'Zatrzymaj przewijanie';
+      });
+    }
+  });
+
+  /* ---------- Wirtualny asystent ---------- */
+  var KB = [
+    { k: ['legal', 'prawn', 'zgodn', 'wolno', 'oszust', 'scam', 'piramid', 'uczciw'],
+      a: 'Tak, to legalne. Banki i platformy same prowadzą programy poleceń i płacą za skuteczne polecenie. Trzymaj się ich regulaminów: nie zakładaj kont na cudze dane, nie obiecuj nikomu gwarantowanych zarobków i mów wprost, że link jest polecający.' },
+    { k: ['podat', 'pit', 'skarbow', 'rozlicz', 'zus', 'urzad', 'zeznan'],
+      a: 'Premie z promocji bankowych to zwykle nagrody w sprzedaży premiowej. Do 2000 zł są zwolnione z PIT, a od wyższych bank sam pobiera 10% podatku. Prowizje z poleceń to Twój przychód, który trzeba wykazać w zeznaniu rocznym. W razie wątpliwości zapytaj księgową.' },
+    { k: ['firm', 'dzialaln', 'nierejestr', 'faktur', 'ceidg'],
+      a: 'Na start firma nie jest potrzebna. Przy małych przychodach z poleceń możesz działać w ramach działalności nierejestrowanej. Jej limit to 225% minimalnego wynagrodzenia w kwartale. Gdy zarabiasz więcej, trzeba założyć firmę.' },
+    { k: ['haslo', 'hasla', 'hasel', 'kod', 'odblok', 'zablok', 'klodk', 'zamkniet'],
+      a: 'Hasło do każdego kroku znajdziesz w poprzednim kroku. Hasło do Kroku 2 podaję na końcu wideo w Kroku 1. Wpisz je w polu na dole strony, a następny krok od razu się otworzy. Hasło do Kroku 4 otwiera od razu także Krok 5.' },
+    { k: ['zacz', 'poczat', 'pierwsz', 'kolejnos', 'jak dziala', 'co robic', 'od czego'],
+      a: 'Zacznij od Kroku 1: obejrzyj wideo i załóż konto M2M. Potem sprawdź e-mail, aktywuj konto i zanotuj hasło do Kroku 2. Kolejne kroki otwierają się po kolei.' },
+    { k: ['bank', 'konto', 'konta', 'kont', 'premi', 'mbank', 'pekao', 'pko', 'alior', 'millennium', 'velo', 'bnp', 'santander', 'ing', 'credit', 'agricole', '26'],
+      a: 'W Kroku 2 masz 10 banków w dwóch grupach: 4 dla osób poniżej 26 lat i 6 dla osób powyżej 26 lat. Premie wynoszą od 300 do 650 zł za konto. Bank wypłaca premię, gdy spełnisz warunki z regulaminu promocji.' },
+    { k: ['ebroker', 'broker', 'partner'],
+      a: 'W Kroku 3 zakładasz konto w eBrokerPartner, gdzie polecasz produkty finansowe za prowizję. Kliknij przycisk w Kroku 3, wypełnij formularz i potwierdź adres e-mail.' },
+    { k: ['akadem', 'vip', '697', 'mentor', 'rat', 'payu', 'payp', 'blik', 'kart'],
+      a: 'Akademia VIP kosztuje teraz 697 zł zamiast 3497 zł. Zapłacisz przez PayU, BLIK, kartą, PayPo albo w maksymalnie 10 ratach 0%. Przy zamówieniu w polu z numerem mentora wpisz 833681.' },
+    { k: ['plan', 'startow', '69', 'pdf', 'skrypt', 'olx', 'tiktok', 'messenger', 'grup', 'tani', 'ebook', 'e-book', 'bonus'],
+      a: 'Plan Startowy kosztuje 69,70 zł. To plik PDF z gotowymi skryptami i opisem darmowych źródeł ruchu: OLX, grupy na Facebooku, TikTok i Messenger. W prezencie dostajesz e-book o płatnych reklamach. Znajdziesz go w Kroku 5.' },
+    { k: ['zwrot', 'reklamac', 'odstap', 'oddac'],
+      a: 'Plan Startowy to plik PDF dostarczany od razu po zakupie. Zamawiając go, zgadzasz się na natychmiastowe dostarczenie, dlatego po zakupie nie ma zwrotów. Zasady zwrotów Akademii VIP opisuje regulamin jej sprzedawcy.' },
+    { k: ['zarob', 'ile', 'kas', 'pieniad', 'dochod', 'wyplat', 'kwot'],
+      a: 'Wynik zależy od tego, ile osób skorzysta z Twoich poleceń i jakie promocje są akurat dostępne. Kwoty przy bankach to maksymalne premie, a nie gwarancja. Nikt uczciwy nie obieca Ci konkretnej sumy.' },
+    { k: ['bezpiecz', 'dane', 'danych', 'prywat', 'rodo'],
+      a: 'Ten panel nie wysyła nigdzie Twoich danych. Hasła i postęp zapisują się tylko w tej przeglądarce. Dane osobowe podajesz wyłącznie na stronach banków i partnerów.' },
+    { k: ['czas', 'dlugo', 'minut', 'godzin', 'szybko'],
+      a: 'Pierwszy krok to kilkanaście minut. Konto w banku zakładasz online, zwykle w kilkanaście minut. Resztę robisz we własnym tempie, a panel zapamięta, gdzie skończyłeś.' },
+    { k: ['kontakt', 'napisz', 'napisac', 'pomoc', 'problem', 'wiadomosc', 'czlowiek'],
+      a: 'Jeśli coś nie działa albo masz pytanie spoza panelu, napisz do mnie. Link "Napisz do mnie" jest na dole panelu.' }
+  ];
+  var FALLBACK = 'Na to pytanie nie mam jeszcze gotowej odpowiedzi. Zacznij od Kroku 1 albo napisz do mnie, link do kontaktu jest na dole panelu.';
+
+  function fold(text) {
+    return String(text || '').toLowerCase().replace(/ł/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+  function answerFor(question) {
+    var q = fold(question);
+    var tokens = q.split(/[^a-z0-9-]+/).filter(Boolean);
+    var best = null, bestScore = 0;
+    KB.forEach(function (entry) {
+      var score = 0;
+      entry.k.forEach(function (kw) {
+        if (kw.indexOf(' ') > -1) { if (q.indexOf(kw) > -1) score += 2; return; }
+        for (var i = 0; i < tokens.length; i++) {
+          if (tokens[i].indexOf(kw) === 0) { score += 1; break; }
+        }
+      });
+      if (score > bestScore) { bestScore = score; best = entry; }
+    });
+    return best ? best.a : FALLBACK;
+  }
+
+  var chatLog = document.getElementById('onb-chat-log');
+  var chatForm = document.getElementById('onb-chat-form');
+  var chatInput = document.getElementById('onb-chat-input');
+  var chatError = document.getElementById('onb-chat-error');
+  var chatBusy = false;
+
+  function bubble(text, who) {
+    var el = document.createElement('div');
+    el.className = 'onb-bubble ' + (who === 'user' ? 'onb-bubble-user' : 'onb-bubble-bot');
+    el.textContent = text;
+    chatLog.appendChild(el);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return el;
+  }
+  function ask(question) {
+    question = String(question || '').trim();
+    if (!question) {
+      chatError.textContent = 'Wpisz pytanie albo wybierz jedno z podpowiedzi.';
+      chatInput.focus();
+      return;
+    }
+    if (chatBusy) return;
+    chatBusy = true;
+    chatError.textContent = '';
+    bubble(question, 'user');
+    chatInput.value = '';
+    var typing = document.createElement('div');
+    typing.className = 'onb-bubble onb-bubble-bot';
+    typing.innerHTML = '<span class="onb-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr-only">Asystent pisze odpowiedź</span>';
+    chatLog.appendChild(typing);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    setTimeout(function () {
+      chatLog.removeChild(typing);
+      bubble(answerFor(question), 'bot');
+      chatBusy = false;
+    }, reduceMotion ? 200 : 650 + Math.min(900, question.length * 12));
+  }
+  if (chatForm) {
+    chatForm.addEventListener('submit', function (e) { e.preventDefault(); ask(chatInput.value); });
+    $$('[data-chat-suggest]').forEach(function (b) {
+      b.addEventListener('click', function () { ask(b.textContent); });
+    });
+  }
+
+  /* ---------- Start ---------- */
+  var initial = viewFromHash();
+  show(initial || 'start', { animate: false, scroll: false, focus: false });
+  if (initial) scrollAppIntoView(true);
+
+  window.Onboarding = {
+    hash: function (password) {
+      var h = hashPassword(password);
+      if (window.console) console.log(h);
+      return h;
+    },
+    reset: function () {
+      forget('unlocked');
+      forget('offerDeadline');
+      window.location.hash = '';
+      window.location.reload();
+    }
+  };
+
+  function reveal() { root.classList.add('onb-ready'); }
+  function revealSoon() { window.requestAnimationFrame(function () { window.requestAnimationFrame(reveal); }); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', revealSoon);
+  else revealSoon();
+  setTimeout(reveal, 1500);
+})();
+</script>
+
+<!-- ================================================================
+     KONIEC PANELU
+     ================================================================ -->
+
+</body>
+</html>
