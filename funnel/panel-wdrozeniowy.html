@@ -16,7 +16,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Manrope:wght@400..800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Manrope:wght@400..800&display=swap">
 
 <script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
 <script>
@@ -136,6 +136,32 @@
   #onb-app .onb-marquee.is-held .onb-marquee-track,
   #onb-app .onb-marquee.is-paused .onb-marquee-track { animation-play-state: paused; }
   @keyframes onbMarquee { to { transform: translateX(calc(-50% - .5rem)); } }
+
+  /* ---------- Checklista (lead) ---------- */
+  #onb-app .onb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  #onb-app .onb-check {
+    width: 1.25rem; height: 1.25rem; flex: none; margin-top: .125rem; border-radius: .375rem; cursor: pointer;
+    border: 1.5px solid rgba(255, 255, 255, .45); background: transparent no-repeat center / .8rem;
+    transition: background-color .2s var(--onb-ease), border-color .2s var(--onb-ease);
+  }
+  #onb-app .onb-check:checked {
+    background-color: #10B981; border-color: #10B981;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2309090B' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+  }
+  #onb-app .onb-check[aria-invalid="true"] { border-color: #FDBA74; }
+  #onb-app .onb-dark-field:focus-visible { outline-color: #34D399; }
+
+  /* ---------- Opinie (dymki) ---------- */
+  #onb-app .onb-quote { position: relative; }
+  #onb-app .onb-quote::after {
+    content: ""; position: absolute; left: 1.75rem; bottom: -8px; width: 16px; height: 16px;
+    background: #FFFFFF; border-right: 1px solid #E7E5E4; border-bottom: 1px solid #E7E5E4; transform: rotate(45deg);
+  }
+
+  /* ---------- Podgląd zrzutu ---------- */
+  #onb-app .onb-lightbox { margin: auto; padding: 0; border: 0; background: transparent; max-width: min(92vw, 30rem); max-height: 92vh; overflow: visible; }
+  #onb-app .onb-lightbox::backdrop { background: rgba(9, 9, 11, .78); }
+  #onb-app .onb-lightbox img { max-height: 82vh; width: auto; margin: 0 auto; }
 
   /* ---------- Ograniczony ruch ---------- */
   @media (prefers-reduced-motion: reduce) {
@@ -272,12 +298,65 @@
           </div>
 
           <div class="mt-7 flex flex-col gap-3 @xl:flex-row @xl:items-center">
-            <a href="#krok-1" class="inline-flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-7 py-3.5 text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">
+            <a href="#krok-1" data-track="click_start_step1" class="inline-flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-7 py-3.5 text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">
               Zacznij od Kroku 1
             </a>
             <button type="button" data-scroll-to="onb-faq" class="inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-zinc-700 underline decoration-stone-300 underline-offset-4 transition-colors hover:text-zinc-900 hover:decoration-zinc-900">
               Najpierw przeczytam odpowiedzi na pytania
             </button>
+          </div>
+        </div>
+
+        <!-- Checklista Startowa (zapis na listę mailingową) -->
+        <div id="onb-lead" class="onb-dark relative overflow-hidden rounded-2xl bg-zinc-900 p-6 text-white shadow-sm @xl:p-10" aria-labelledby="onb-h-lead">
+          <div class="grid items-center gap-10 @3xl:grid-cols-[minmax(0,1fr)_15rem]">
+            <div class="min-w-0">
+              <h2 id="onb-h-lead" class="max-w-[24ch] text-balance font-display text-[1.75rem] font-medium leading-[1.12] @xl:text-[2.25rem]">Nie jesteś jeszcze pewien? Odbierz darmową Checklistę Startową.</h2>
+              <p class="mt-4 max-w-[54ch] text-[1.0625rem] leading-relaxed text-zinc-300">Zostaw swój e-mail, a wyślę Ci darmowy PDF z instrukcją, jak bez ryzyka zarobić pierwsze 500 zł w internecie.</p>
+
+              <form id="onb-lead-form" class="mt-7" novalidate>
+                <label for="onb-lead-email" class="block text-sm font-semibold text-zinc-200">Twój adres e-mail</label>
+                <div class="mt-2 flex flex-col gap-3 @xl:flex-row">
+                  <input id="onb-lead-email" name="email" type="email" inputmode="email" autocomplete="email" required placeholder="imie@przyklad.pl" aria-describedby="onb-lead-msg" class="onb-dark-field min-h-[56px] w-full flex-1 rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white transition-colors placeholder:text-zinc-500 hover:border-white/25 focus:border-emerald-400 focus:bg-white/10">
+                  <button type="submit" class="inline-flex min-h-[56px] flex-none cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 text-base font-semibold text-zinc-950 shadow-sm transition-colors duration-200 hover:bg-emerald-400 active:bg-emerald-600 disabled:cursor-wait disabled:opacity-70">
+                    <span data-lead-label>Wyślij mi darmowy PDF →</span>
+                  </button>
+                </div>
+                <input class="onb-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+                <label class="mt-4 flex items-start gap-3 text-sm leading-relaxed text-zinc-300">
+                  <input id="onb-lead-consent" type="checkbox" class="onb-check onb-dark-field">
+                  <span>Chcę otrzymać checklistę oraz wiadomości e-mail z poradami o zarabianiu na poleceniach. Zgodę mogę wycofać w każdej chwili.<span data-privacy hidden> Szczegóły w <a href="#" data-href-key="privacy" data-link-type="contact" class="font-semibold text-white underline decoration-zinc-500 underline-offset-2 hover:decoration-white">polityce prywatności</a>.</span></span>
+                </label>
+                <p id="onb-lead-msg" class="mt-3 text-sm font-medium text-orange-300 empty:hidden" role="status" aria-live="polite"></p>
+                <p class="mt-4 flex items-center gap-2 text-xs text-zinc-400">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                  Zero spamu. Wypisujesz się kiedy chcesz.
+                </p>
+              </form>
+
+              <div data-lead-success class="mt-7 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-5" tabindex="-1" hidden>
+                <p class="flex items-center gap-2 font-semibold text-emerald-300"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>Gotowe. Checklista jest w drodze.</p>
+                <p class="mt-2 text-sm leading-relaxed text-zinc-300">Sprawdź skrzynkę e-mail. Jeśli w ciągu kilku minut nie widzisz wiadomości, zajrzyj do folderów Oferty i Spam.</p>
+                <a href="#krok-1" data-track="click_start_step1" data-track-data='{"position":"lead_success"}' class="mt-4 inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-100">A teraz zacznij od Kroku 1</a>
+              </div>
+            </div>
+
+            <!-- Podgląd PDF (dekoracja) -->
+            <div class="hidden @3xl:block" aria-hidden="true">
+              <div class="relative mx-auto w-56 rotate-[-4deg] rounded-lg bg-[#FBFAF7] p-5 text-zinc-900 shadow-[0_24px_48px_-12px_rgba(0,0,0,.55)]">
+                <div class="flex items-center justify-between text-[10px] font-semibold text-stone-500"><span>PDF</span><span>1 / 6</span></div>
+                <p class="mt-4 font-display text-xl font-medium leading-tight">Checklista Startowa</p>
+                <p class="mt-1 text-xs text-stone-500">Pierwsze 500 zł, krok po kroku</p>
+                <ul class="mt-5 space-y-2.5">
+                  <li class="flex items-center gap-2.5"><span class="grid h-3.5 w-3.5 place-items-center rounded-[4px] bg-emerald-500"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#09090B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="h-1.5 w-28 rounded-full bg-stone-300"></span></li>
+                  <li class="flex items-center gap-2.5"><span class="grid h-3.5 w-3.5 place-items-center rounded-[4px] bg-emerald-500"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#09090B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="h-1.5 w-24 rounded-full bg-stone-300"></span></li>
+                  <li class="flex items-center gap-2.5"><span class="h-3.5 w-3.5 rounded-[4px] border border-stone-400"></span><span class="h-1.5 w-32 rounded-full bg-stone-200"></span></li>
+                  <li class="flex items-center gap-2.5"><span class="h-3.5 w-3.5 rounded-[4px] border border-stone-400"></span><span class="h-1.5 w-20 rounded-full bg-stone-200"></span></li>
+                  <li class="flex items-center gap-2.5"><span class="h-3.5 w-3.5 rounded-[4px] border border-stone-400"></span><span class="h-1.5 w-28 rounded-full bg-stone-200"></span></li>
+                </ul>
+                <div class="mt-6 h-1.5 w-full rounded-full bg-stone-200"><div class="h-full w-2/5 rounded-full bg-zinc-900"></div></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -374,7 +453,7 @@
                 Czy moje dane są tu bezpieczne?
                 <svg class="onb-chev flex-none text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
               </summary>
-              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Ten panel nie wysyła nigdzie Twoich danych. Hasła do kroków i postęp zapisują się tylko w tej przeglądarce. Dane osobowe podajesz wyłącznie na stronach banków i partnerów, po kliknięciu w ich przyciski.</p>
+              <p class="max-w-[65ch] pb-5 leading-relaxed text-stone-600">Hasła do kroków i postęp zapisują się tylko w tej przeglądarce. Twój e-mail trafia do mojego systemu mailingowego wyłącznie wtedy, gdy sam zapiszesz się po checklistę. Dane do kont podajesz tylko na stronach banków i partnerów, a statystyki odwiedzin nie zawierają Twojego e-maila ani haseł.</p>
             </details>
             <details class="onb-faq group">
               <summary class="flex min-h-[56px] items-center justify-between gap-4 py-4 text-left font-semibold">
@@ -450,7 +529,7 @@
           </div>
 
           <div class="mt-7">
-            <a href="#" data-href-key="m2m" class="inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto">
+            <a href="#" data-href-key="m2m" data-track="click_m2m_register" class="inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto">
               Przejdź do rejestracji M2M
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
             </a>
@@ -519,28 +598,28 @@
               <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
               <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">450&nbsp;zł</p>
               <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
-              <a href="#" data-href-key="banks.mbank" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w mBanku</span></a>
+              <a href="#" data-href-key="banks.mbank" data-track="click_bank_account" data-track-data='{"bank":"mBank","age_group":"ponizej_26","bonus_pln":450}' class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w mBanku</span></a>
             </article>
             <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
               <h3 class="text-lg font-bold">Bank Pekao</h3>
               <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
               <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">400&nbsp;zł</p>
               <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
-              <a href="#" data-href-key="banks.pekao" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Banku Pekao</span></a>
+              <a href="#" data-href-key="banks.pekao" data-track="click_bank_account" data-track-data='{"bank":"Bank Pekao","age_group":"ponizej_26","bonus_pln":400}' class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Banku Pekao</span></a>
             </article>
             <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
               <h3 class="text-lg font-bold">PKO BP</h3>
               <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
               <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">300&nbsp;zł</p>
               <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
-              <a href="#" data-href-key="banks.pkobp" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w PKO BP</span></a>
+              <a href="#" data-href-key="banks.pkobp" data-track="click_bank_account" data-track-data='{"bank":"PKO BP","age_group":"ponizej_26","bonus_pln":300}' class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w PKO BP</span></a>
             </article>
             <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
               <h3 class="text-lg font-bold">Alior Bank</h3>
               <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
               <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">400&nbsp;zł</p>
               <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
-              <a href="#" data-href-key="banks.alior" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Alior Banku</span></a>
+              <a href="#" data-href-key="banks.alior" data-track="click_bank_account" data-track-data='{"bank":"Alior Bank","age_group":"ponizej_26","bonus_pln":400}' class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Alior Banku</span></a>
             </article>
           </div>
         </div>
@@ -561,42 +640,42 @@
               <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
               <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">650&nbsp;zł</p>
               <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
-              <a href="#" data-href-key="banks.millennium" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Banku Millennium</span></a>
+              <a href="#" data-href-key="banks.millennium" data-track="click_bank_account" data-track-data='{"bank":"Bank Millennium","age_group":"powyzej_26","bonus_pln":650}' class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Banku Millennium</span></a>
             </article>
             <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
               <h3 class="text-lg font-bold">VeloBank</h3>
               <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
               <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">600&nbsp;zł</p>
               <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
-              <a href="#" data-href-key="banks.velobank" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w VeloBanku</span></a>
+              <a href="#" data-href-key="banks.velobank" data-track="click_bank_account" data-track-data='{"bank":"VeloBank","age_group":"powyzej_26","bonus_pln":600}' class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w VeloBanku</span></a>
             </article>
             <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
               <h3 class="text-lg font-bold">BNP Paribas</h3>
               <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
               <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">400&nbsp;zł</p>
               <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
-              <a href="#" data-href-key="banks.bnp" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w BNP Paribas</span></a>
+              <a href="#" data-href-key="banks.bnp" data-track="click_bank_account" data-track-data='{"bank":"BNP Paribas","age_group":"powyzej_26","bonus_pln":400}' class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w BNP Paribas</span></a>
             </article>
             <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
               <h3 class="text-lg font-bold">Santander</h3>
               <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
               <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">600&nbsp;zł</p>
               <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
-              <a href="#" data-href-key="banks.santander" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Santanderze</span></a>
+              <a href="#" data-href-key="banks.santander" data-track="click_bank_account" data-track-data='{"bank":"Santander","age_group":"powyzej_26","bonus_pln":600}' class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Santanderze</span></a>
             </article>
             <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
               <h3 class="text-lg font-bold">ING</h3>
               <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
               <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">500&nbsp;zł</p>
               <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
-              <a href="#" data-href-key="banks.ing" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w ING</span></a>
+              <a href="#" data-href-key="banks.ing" data-track="click_bank_account" data-track-data='{"bank":"ING","age_group":"powyzej_26","bonus_pln":500}' class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w ING</span></a>
             </article>
             <article class="flex flex-col rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-stone-300">
               <h3 class="text-lg font-bold">Credit Agricole</h3>
               <p class="mt-5 flex items-center gap-1.5 text-sm font-semibold text-moss-700"><svg class="flex-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Premia gotówkowa do</p>
               <p class="font-display text-[2.5rem] font-medium leading-none text-moss-700 onb-num-tab">555&nbsp;zł</p>
               <p class="mt-3 flex-1 text-sm leading-relaxed text-stone-600">Wypłata na konto po spełnieniu warunków promocji.</p>
-              <a href="#" data-href-key="banks.creditagricole" class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Credit Agricole</span></a>
+              <a href="#" data-href-key="banks.creditagricole" data-track="click_bank_account" data-track-data='{"bank":"Credit Agricole","age_group":"powyzej_26","bonus_pln":555}' class="mt-5 inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-zinc-800">Otwórz konto<span class="sr-only"> w Credit Agricole</span></a>
             </article>
           </div>
 
@@ -638,7 +717,7 @@
           </ol>
 
           <div class="mt-8">
-            <a href="#" data-href-key="ebroker" class="inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto">
+            <a href="#" data-href-key="ebroker" data-track="click_ebroker_register" class="inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto">
               Załóż konto w eBrokerPartner
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
             </a>
@@ -682,6 +761,60 @@
           </div>
         </div>
 
+        <!-- Wyniki kursantów -->
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10" aria-labelledby="onb-h-proof">
+          <h2 id="onb-h-proof" class="font-display text-2xl font-medium leading-tight @xl:text-[1.875rem]">Wyniki naszych kursantów</h2>
+          <p class="mt-2 max-w-[60ch] text-stone-600">Zrzuty wypłat i słowa osób, które przeszły Akademię. Kliknij zrzut, żeby go powiększyć.</p>
+
+          <!-- EDYTUJ: podmień src na prawdziwe zrzuty wypłat (najlepiej pionowe, z zamazanymi danymi osobowymi) -->
+          <div class="mt-6 grid grid-cols-1 gap-4 @md:grid-cols-3">
+            <button type="button" data-proof-open data-track="proof_screenshot_open" data-track-data='{"screenshot":1}' class="group block cursor-zoom-in overflow-hidden rounded-xl border border-stone-200 bg-stone-50 text-left transition-colors hover:border-stone-400" aria-label="Powiększ zrzut wypłaty 1">
+              <img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%22600%22%20viewBox%3D%220%200%20480%20600%22%3E%3Crect%20width%3D%22480%22%20height%3D%22600%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%22150%22%20y%3D%22190%22%20width%3D%22180%22%20height%3D%22150%22%20rx%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%23B8B2A7%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M175%20300l40-45%2030%2030%2025-20%2035%2035%22%20fill%3D%22none%22%20stroke%3D%22%23B8B2A7%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%22285%22%20cy%3D%22230%22%20r%3D%2212%22%20fill%3D%22%23B8B2A7%22%2F%3E%3Ctext%20x%3D%22240%22%20y%3D%22400%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2226%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EScreen%20z%20wyp%C5%82aty%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Screen z wypłaty kursanta 1" width="480" height="600" loading="lazy" class="aspect-[4/5] w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]">
+            </button>
+            <button type="button" data-proof-open data-track="proof_screenshot_open" data-track-data='{"screenshot":2}' class="group block cursor-zoom-in overflow-hidden rounded-xl border border-stone-200 bg-stone-50 text-left transition-colors hover:border-stone-400" aria-label="Powiększ zrzut wypłaty 2">
+              <img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%22600%22%20viewBox%3D%220%200%20480%20600%22%3E%3Crect%20width%3D%22480%22%20height%3D%22600%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%22150%22%20y%3D%22190%22%20width%3D%22180%22%20height%3D%22150%22%20rx%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%23B8B2A7%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M175%20300l40-45%2030%2030%2025-20%2035%2035%22%20fill%3D%22none%22%20stroke%3D%22%23B8B2A7%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%22285%22%20cy%3D%22230%22%20r%3D%2212%22%20fill%3D%22%23B8B2A7%22%2F%3E%3Ctext%20x%3D%22240%22%20y%3D%22400%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2226%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EScreen%20z%20wyp%C5%82aty%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Screen z wypłaty kursanta 2" width="480" height="600" loading="lazy" class="aspect-[4/5] w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]">
+            </button>
+            <button type="button" data-proof-open data-track="proof_screenshot_open" data-track-data='{"screenshot":3}' class="group block cursor-zoom-in overflow-hidden rounded-xl border border-stone-200 bg-stone-50 text-left transition-colors hover:border-stone-400" aria-label="Powiększ zrzut wypłaty 3">
+              <img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%22600%22%20viewBox%3D%220%200%20480%20600%22%3E%3Crect%20width%3D%22480%22%20height%3D%22600%22%20fill%3D%22%23EDEBE4%22%2F%3E%3Crect%20x%3D%22150%22%20y%3D%22190%22%20width%3D%22180%22%20height%3D%22150%22%20rx%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%23B8B2A7%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M175%20300l40-45%2030%2030%2025-20%2035%2035%22%20fill%3D%22none%22%20stroke%3D%22%23B8B2A7%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%22285%22%20cy%3D%22230%22%20r%3D%2212%22%20fill%3D%22%23B8B2A7%22%2F%3E%3Ctext%20x%3D%22240%22%20y%3D%22400%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2226%22%20fill%3D%22%2378716C%22%20text-anchor%3D%22middle%22%3EScreen%20z%20wyp%C5%82aty%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Screen z wypłaty kursanta 3" width="480" height="600" loading="lazy" class="aspect-[4/5] w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]">
+            </button>
+          </div>
+
+          <!-- EDYTUJ: wklej prawdziwe opinie kursantów (za ich zgodą). Nie publikuj opinii wymyślonych. -->
+          <div class="mt-10 grid gap-8 @xl:grid-cols-2">
+            <figure>
+              <blockquote class="onb-quote rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+                <svg class="text-stone-300" width="28" height="22" viewBox="0 0 28 22" fill="currentColor" aria-hidden="true"><path d="M0 22V13.2C0 5.6 4.1 1.2 11 0l1.3 3.2C8.4 4.4 6.5 7 6.3 10.4H12V22H0zm16 0V13.2C16 5.6 20.1 1.2 27 0l1 3.2c-3.9 1.2-5.8 3.8-6 7.2H28V22H16z"/></svg>
+                <p class="mt-3 font-display text-[1.1875rem] italic leading-relaxed text-zinc-800">[Tu wklej prawdziwą opinię Michała: od czego zaczął i jaki ma wynik. Dwa krótkie zdania wystarczą.]</p>
+              </blockquote>
+              <figcaption class="mt-5 flex items-center gap-3 pl-2">
+                <span class="grid h-10 w-10 flex-none place-items-center rounded-full bg-zinc-900 text-sm font-semibold text-white" aria-hidden="true">M</span>
+                <span><span class="block font-semibold">Michał z Krakowa</span><span class="block text-sm text-stone-500">Kursant Akademii</span></span>
+              </figcaption>
+            </figure>
+            <figure>
+              <blockquote class="onb-quote rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+                <svg class="text-stone-300" width="28" height="22" viewBox="0 0 28 22" fill="currentColor" aria-hidden="true"><path d="M0 22V13.2C0 5.6 4.1 1.2 11 0l1.3 3.2C8.4 4.4 6.5 7 6.3 10.4H12V22H0zm16 0V13.2C16 5.6 20.1 1.2 27 0l1 3.2c-3.9 1.2-5.8 3.8-6 7.2H28V22H16z"/></svg>
+                <p class="mt-3 font-display text-[1.1875rem] italic leading-relaxed text-zinc-800">[Tu wklej prawdziwą opinię Ani: co zmieniła Akademia i ile czasu zajęły pierwsze efekty.]</p>
+              </blockquote>
+              <figcaption class="mt-5 flex items-center gap-3 pl-2">
+                <span class="grid h-10 w-10 flex-none place-items-center rounded-full bg-moss-700 text-sm font-semibold text-white" aria-hidden="true">A</span>
+                <span><span class="block font-semibold">Ania, studentka</span><span class="block text-sm text-stone-500">Kursantka Akademii</span></span>
+              </figcaption>
+            </figure>
+          </div>
+
+          <p class="mt-8 max-w-[70ch] text-sm leading-relaxed text-stone-500">Publikuję tylko opinie i zrzuty od osób, które kupiły Akademię i zgodziły się na ich pokazanie. Wyniki zależą od pracy każdej osoby i nie są gwarantowane.</p>
+
+          <dialog id="onb-proof-dialog" class="onb-lightbox" aria-label="Powiększony zrzut wypłaty">
+            <div class="relative">
+              <img data-proof-full alt="" class="rounded-xl bg-white">
+              <button type="button" data-proof-close class="absolute -top-3 -right-3 grid h-11 w-11 cursor-pointer place-items-center rounded-full bg-white text-zinc-900 shadow-sm transition-colors hover:bg-stone-100" aria-label="Zamknij podgląd">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </button>
+            </div>
+          </dialog>
+        </div>
+
         <!-- Cena -->
         <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm @xl:p-8 @3xl:p-10" aria-labelledby="onb-h-price">
           <h2 id="onb-h-price" class="font-display text-2xl font-medium leading-tight @xl:text-[1.875rem]">Twoja cena</h2>
@@ -698,7 +831,7 @@
           </div>
 
           <div class="mt-6">
-            <a href="https://akademiaafiliacyjna.elms.pl/s/sprzedaz-mega-promocja.html?polecajacy=sroczynski.kuba" data-href-key="akademia" target="_blank" rel="sponsored noopener" class="inline-flex min-h-[60px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">
+            <a href="https://akademiaafiliacyjna.elms.pl/s/sprzedaz-mega-promocja.html?polecajacy=sroczynski.kuba" data-href-key="akademia" data-track="initiate_checkout_akademia" data-track-data='{"value":697,"currency":"PLN"}' target="_blank" rel="sponsored noopener" class="inline-flex min-h-[60px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">
               Przejdź do zamówienia Akademii VIP
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
             </a>
@@ -707,7 +840,7 @@
 
           <div class="mt-6 rounded-xl border-2 border-orange-600 bg-orange-50 p-5 @xl:p-6" role="note">
             <p class="font-semibold leading-relaxed text-zinc-900">⚠️ WAŻNE: Podczas składania zamówienia, w polu 'Podaj nr ID swojego mentora od którego kupujesz Akademię *' musisz wpisać: <span class="onb-num-tab whitespace-nowrap rounded-md bg-white px-2 py-0.5 font-bold text-orange-900 ring-1 ring-orange-200">833681</span></p>
-            <button type="button" data-copy="833681" class="mt-4 inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-orange-900 transition-colors hover:border-orange-500">
+            <button type="button" data-copy="833681" data-track="copy_mentor_id" class="mt-4 inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-orange-900 transition-colors hover:border-orange-500">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
               <span data-copy-label>Kopiuj numer 833681</span>
             </button>
@@ -718,7 +851,7 @@
         <div class="rounded-2xl border-2 border-zinc-900 bg-[#F1EFE8] p-6 shadow-sm @xl:p-10" aria-labelledby="onb-h-down">
           <h2 id="onb-h-down" class="max-w-[24ch] text-balance font-display text-[1.75rem] font-semibold leading-[1.12] @xl:text-[2.25rem]">WOLISZ NAJPIERW PRZETESTOWAĆ TEN MODEL BIZNESOWY?</h2>
           <p class="mt-4 max-w-[60ch] text-[1.0625rem] leading-relaxed text-zinc-700">Nie musisz inwestować 697 zł w pełną automatyzację, żeby zdobyć pierwszych klientów. Odbierz surowe skrypty i przetestuj darmowy ruch za ułamek ceny.</p>
-          <a href="#krok-5" class="mt-7 inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-4 text-center text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto @xl:px-8">Wybieram Plan Startowy (69,70 zł) i zaczynam od podstaw →</a>
+          <a href="#krok-5" data-track="click_downsell_planB" data-track-data='{"value":69.7,"currency":"PLN"}' class="mt-7 inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-4 text-center text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto @xl:px-8">Wybieram Plan Startowy (69,70 zł) i zaczynam od podstaw →</a>
         </div>
       </section>
 
@@ -751,12 +884,12 @@
           </div>
 
           <div class="mt-6">
-            <a href="#" data-href-key="planStartowy" class="onb-planb-cta inline-flex min-h-[60px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-center text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">
+            <a href="#" data-href-key="planStartowy" data-track="initiate_checkout_planB" data-track-data='{"value":69.7,"currency":"PLN","position":"top"}' class="onb-planb-cta inline-flex min-h-[60px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-center text-lg font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950">
               <span data-cta-label>Kupuję Plan Startowy za 69,70 zł</span>
             </a>
             <div data-offer-expired class="rounded-xl border border-stone-300 bg-stone-50 p-5" hidden>
               <p class="font-semibold leading-relaxed">Czas minął. Oferta wygasła. Jeśli nadal chcesz skorzystać, wyślij do mnie wiadomość.</p>
-              <a href="#" data-href-key="contact" data-link-type="contact" class="mt-4 inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800">Wyślij wiadomość</a>
+              <a href="#" data-href-key="contact" data-link-type="contact" data-track="click_contact" class="mt-4 inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800">Wyślij wiadomość</a>
             </div>
             <p class="mt-4 max-w-[70ch] text-sm leading-relaxed text-stone-500">Przycisk otwiera okienko płatności tylko raz. Plan Startowy to plik PDF dostarczany od razu po płatności. Składając zamówienie, zgadzasz się na natychmiastowe dostarczenie treści cyfrowej i przyjmujesz do wiadomości, że tracisz wtedy prawo do odstąpienia od umowy. Dlatego po zakupie nie ma zwrotów.</p>
           </div>
@@ -810,7 +943,7 @@
             </div>
           </div>
           <div class="mt-7 px-5 @xl:px-8">
-            <a href="#" data-href-key="planStartowy" class="onb-planb-cta inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-center text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto">
+            <a href="#" data-href-key="planStartowy" data-track="initiate_checkout_planB" data-track-data='{"value":69.7,"currency":"PLN","position":"bottom"}' class="onb-planb-cta inline-flex min-h-[56px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-center text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-zinc-800 active:bg-zinc-950 @xl:w-auto">
               <span data-cta-label>Kupuję Plan Startowy za 69,70 zł</span>
             </a>
           </div>
@@ -866,7 +999,7 @@
   <footer class="mt-8 border-t border-stone-200 pt-6 text-sm leading-relaxed text-stone-500">
     <div class="flex flex-col gap-3 @3xl:flex-row @3xl:items-start @3xl:justify-between">
       <p class="max-w-[75ch]">Linki do banków i partnerów są linkami polecającymi. Mogę otrzymać za nie wynagrodzenie, a Ty nie płacisz przez to więcej. Treści w panelu to ogólne informacje, a nie porada finansowa ani podatkowa.</p>
-      <a href="#" data-href-key="contact" data-link-type="contact" class="inline-flex min-h-[44px] flex-none items-center font-semibold text-zinc-900 underline decoration-stone-300 underline-offset-4 hover:decoration-zinc-900">Napisz do mnie</a>
+      <a href="#" data-href-key="contact" data-link-type="contact" data-track="click_contact" class="inline-flex min-h-[44px] flex-none items-center font-semibold text-zinc-900 underline decoration-stone-300 underline-offset-4 hover:decoration-zinc-900">Napisz do mnie</a>
     </div>
   </footer>
 
@@ -917,6 +1050,7 @@
       akademia: 'https://akademiaafiliacyjna.elms.pl/s/sprzedaz-mega-promocja.html?polecajacy=sroczynski.kuba',
       planStartowy: '',
       contact: '',
+      privacy: '',
       banks: {
         mbank: '',
         pekao: '',
@@ -931,6 +1065,30 @@
       }
     },
 
+    /* Checklista Startowa: zapis na listę mailingową.
+       Skopiuj z kodu formularza w swoim systemie mailingowym (MailerLite,
+       GetResponse, Brevo, Formspree...) adres z atrybutu action="..."
+       i nazwę pola e-mail z atrybutu name="..." (np. email, EMAIL, fields[email]).
+       Ukryte pola z tego formularza (np. token listy) wpisz w extraFields.
+       Pusty action = formularz pokaże komunikat, że zapis jest chwilowo niedostępny. */
+    newsletter: {
+      action: '',
+      emailField: 'email',
+      extraFields: {},
+      requireConsent: true
+    },
+
+    /* Analityka: trackEvent() wysyła zdarzenia do narzędzi, które już są na stronie.
+       Wyłącz kanał, którego nie chcesz używać. debug: true pokazuje zdarzenia w konsoli
+       (to samo daje dopisanie ?onb_debug=1 do adresu strony). */
+    analytics: {
+      ga4: true,
+      dataLayer: true,
+      metaPixel: true,
+      tiktokPixel: true,
+      debug: false
+    },
+
     /* Plan Startowy: zegar liczy od pierwszego otwarcia Kroku 5.
        seatsSchedule: [sekunda od startu, zajęte miejsca]. */
     planStartowy: {
@@ -942,10 +1100,75 @@
 </script>
 
 <script>
+/* ================================================================
+   ANALITYKA: trackEvent(eventName, data)
+   Wszystkie zdarzenia panelu przechodzą przez tę jedną funkcję.
+   Wysyła je do GA4 (gtag), Google Tag Managera (dataLayer),
+   Meta Pixela (fbq) i TikTok Pixela (ttq), o ile są już na stronie.
+   Gdy żadnego z nich nie ma, funkcja nic nie robi.
+   Kody GA4 i Pixeli wstaw przez wtyczkę do zgód cookies, a panel
+   sam zacznie wysyłać do nich zdarzenia. Nie wysyła e-maili ani haseł.
+   ================================================================ */
+window.trackEvent = function (eventName, data) {
+  var cfg = (window.ONB_CONFIG && window.ONB_CONFIG.analytics) || {};
+  var params = { funnel: 'panel_wdrozeniowy' };
+  if (data && typeof data === 'object') {
+    for (var key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key) && data[key] !== undefined) params[key] = data[key];
+    }
+  }
+
+  /* Zdarzenia, które Meta i TikTok znają pod standardowymi nazwami. */
+  var STANDARD = {
+    initiate_checkout_akademia: { meta: 'InitiateCheckout', tiktok: 'InitiateCheckout', product: 'Akademia VIP' },
+    initiate_checkout_planB: { meta: 'InitiateCheckout', tiktok: 'InitiateCheckout', product: 'Plan Startowy' },
+    generate_lead: { meta: 'Lead', tiktok: 'SubmitForm', product: 'Checklista Startowa' }
+  };
+  var standard = STANDARD[eventName];
+  var commerce = standard ? { value: params.value, currency: params.currency, content_name: standard.product } : null;
+
+  var debug = cfg.debug === true || /[?&]onb_debug=1\b/.test(window.location.search);
+  if (debug && window.console) console.log('[trackEvent]', eventName, params);
+
+  try {
+    /* Google Analytics 4 (gtag.js) */
+    if (cfg.ga4 !== false && typeof window.gtag === 'function') {
+      window.gtag('event', eventName, params);
+    }
+
+    /* Google Tag Manager: w GTM użyj reguły "Zdarzenie niestandardowe" o nazwie zdarzenia. */
+    var gtm = window.google_tag_manager;
+    var hasGtm = !!gtm && Object.keys(gtm).some(function (k) { return k.indexOf('GTM-') === 0; });
+    if (cfg.dataLayer !== false && hasGtm) {
+      window.dataLayer = window.dataLayer || [];
+      var push = { event: eventName };
+      for (var p in params) if (Object.prototype.hasOwnProperty.call(params, p)) push[p] = params[p];
+      window.dataLayer.push(push);
+    }
+
+    /* Meta Pixel (Facebook / Instagram) */
+    if (cfg.metaPixel !== false && typeof window.fbq === 'function') {
+      if (standard) window.fbq('track', standard.meta, commerce);
+      else window.fbq('trackCustom', eventName, params);
+    }
+
+    /* TikTok Pixel */
+    if (cfg.tiktokPixel !== false && window.ttq && typeof window.ttq.track === 'function') {
+      if (standard) window.ttq.track(standard.tiktok, commerce);
+      else window.ttq.track(eventName, params);
+    }
+
+    /* TU DOPISZ kolejne narzędzie, np. Pinterest albo Microsoft Clarity. */
+  } catch (err) {
+    if (debug && window.console) console.warn('[trackEvent] błąd narzędzia analitycznego', err);
+  }
+};
+
 (function () {
   'use strict';
 
   var C = window.ONB_CONFIG || {};
+  var track = window.trackEvent;
   var root = document.getElementById('onb-app');
   if (!root) return;
 
@@ -1018,6 +1241,7 @@
 
   /* ---------- Widoki ---------- */
   var VIEW_STEP = { 'start': 0, 'krok-1': 1, 'krok-2': 2, 'krok-3': 3, 'krok-4': 4, 'krok-5': 5 };
+  var STEP_NAMES = ['start', 'rejestracja_m2m', 'konta_bankowe', 'ebrokerpartner', 'akademia_vip', 'plan_startowy'];
   var currentView = null;
 
   function viewFromHash() {
@@ -1062,6 +1286,8 @@
     });
     currentView = view;
     render();
+    if (target === 'locked') track('view_locked_step', { step_number: step });
+    else track('view_step_' + step, { step_number: step, step_name: STEP_NAMES[step] });
     if (target === 'krok-5') startOffer();
     if (opts.scroll) scrollAppIntoView(false);
     if (opts.focus) {
@@ -1162,6 +1388,7 @@
         e.preventDefault();
         setNavMessage(lockedMessage(step));
         animateNode(step, 'onb-nudge');
+        track('click_locked_step', { step_number: step });
       } else {
         setNavMessage('');
       }
@@ -1200,11 +1427,13 @@
         input.setAttribute('aria-invalid', 'true');
         input.classList.add('border-orange-600');
         input.select();
+        track('password_error', { step_number: step });
         return;
       }
       input.value = '';
       msg.textContent = '';
       unlock(step);
+      track('unlock_step_' + step, step === 4 ? { step_number: 4, also_unlocked: 5 } : { step_number: step });
       $('[data-gate-open-text]', gate).textContent = step === 4 ? 'Gotowe. Kroki 4 i 5 są otwarte.' : 'Gotowe. Krok ' + step + ' jest otwarty.';
       render();
       animateNode(step, 'onb-pop');
@@ -1251,6 +1480,31 @@
     }
   });
 
+  /* ---------- Zdarzenia z przycisków (atrybut data-track) ----------
+     Nasłuch w fazie przechwytywania: zdarzenie idzie do analityki,
+     zanim przycisk zmieni stan (np. jednorazowy przycisk Planu B). */
+  root.addEventListener('click', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('[data-track]') : null;
+    if (!el || !root.contains(el)) return;
+    if (el.getAttribute('data-used') === 'true' || el.getAttribute('aria-disabled') === 'true') return;
+    if (el.getAttribute('data-missing') === 'true') {
+      track('link_missing', { link: el.getAttribute('data-href-key') });
+      return;
+    }
+    var data = {};
+    var raw = el.getAttribute('data-track-data');
+    if (raw) { try { data = JSON.parse(raw); } catch (err) { data = {}; } }
+    track(el.getAttribute('data-track'), data);
+  }, true);
+
+  $$('details.onb-faq').forEach(function (d) {
+    d.addEventListener('toggle', function () {
+      if (!d.open) return;
+      var summary = $('summary', d);
+      track('faq_open', { question: summary ? summary.textContent.trim() : '' });
+    });
+  });
+
   /* ---------- Wideo (ładuje się dopiero po kliknięciu) ---------- */
   function toEmbed(url) {
     var m = url.match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/);
@@ -1280,6 +1534,7 @@
       '<span class="absolute bottom-4 left-4 right-4 text-left text-sm font-semibold text-zinc-200"></span>';
     btn.lastChild.textContent = title;
     btn.addEventListener('click', function () {
+      track('video_play', { video: box.getAttribute('data-video') });
       var embed = toEmbed(url);
       var frame = document.createElement('div');
       frame.className = 'relative aspect-video w-full overflow-hidden rounded-xl bg-zinc-900';
@@ -1385,8 +1640,10 @@
     if (!deadline) {
       deadline = Date.now() + minutes * 60000;
       save('offerDeadline', deadline);
+      track('offer_timer_start_planB', { minutes: minutes });
     }
     var startedAt = deadline - minutes * 60000;
+    var wasLive = Date.now() < deadline;
     function tick() {
       var now = Date.now();
       var left = Math.max(0, deadline - now);
@@ -1396,6 +1653,7 @@
       if (left <= 0) {
         clearInterval(offerInterval);
         expireOffer();
+        if (wasLive) { wasLive = false; track('offer_expired_planB'); }
       }
     }
     tick();
@@ -1447,35 +1705,143 @@
     }
   });
 
+  /* ---------- Checklista Startowa (zapis na listę mailingową) ---------- */
+  var N = C.newsletter || {};
+  var leadForm = document.getElementById('onb-lead-form');
+  if (leadForm) {
+    var leadEmail = document.getElementById('onb-lead-email');
+    var leadConsent = document.getElementById('onb-lead-consent');
+    var leadMsg = document.getElementById('onb-lead-msg');
+    var leadBtn = $('button[type="submit"]', leadForm);
+    var leadLabel = $('[data-lead-label]', leadForm);
+    var leadSuccess = $('[data-lead-success]');
+    var leadPrivacy = $('[data-privacy]', leadForm);
+    var requireConsent = N.requireConsent !== false;
+
+    if (leadPrivacy && C.links && C.links.privacy) leadPrivacy.hidden = false;
+    if (!requireConsent && leadConsent) leadConsent.closest('label').hidden = true;
+
+    var showLeadSuccess = function (focus) {
+      leadForm.hidden = true;
+      leadSuccess.hidden = false;
+      if (focus) { try { leadSuccess.focus({ preventScroll: true }); } catch (e) { leadSuccess.focus(); } }
+    };
+    var leadError = function (text, field) {
+      leadMsg.textContent = text;
+      if (field) { field.setAttribute('aria-invalid', 'true'); field.focus(); }
+    };
+    var clearLeadError = function (field) {
+      if (field.getAttribute('aria-invalid') === 'true') { field.removeAttribute('aria-invalid'); leadMsg.textContent = ''; }
+    };
+
+    if (load('leadSent', false)) showLeadSuccess(false);
+    leadEmail.addEventListener('input', function () { clearLeadError(leadEmail); });
+    leadConsent.addEventListener('change', function () { clearLeadError(leadConsent); });
+
+    leadForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = leadEmail.value.trim();
+      leadMsg.textContent = '';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+        leadError('Wpisz poprawny adres e-mail, na przykład imie@przyklad.pl.', leadEmail);
+        track('lead_form_invalid', { reason: 'email' });
+        return;
+      }
+      if (requireConsent && !leadConsent.checked) {
+        leadError('Zaznacz zgodę, żebym mógł wysłać Ci checklistę.', leadConsent);
+        track('lead_form_invalid', { reason: 'consent' });
+        return;
+      }
+      var trap = $('.onb-hp', leadForm);
+      if (trap && trap.value) { showLeadSuccess(true); return; }
+      if (!N.action) {
+        leadError('Zapis jest chwilowo niedostępny. Napisz do mnie, a wyślę Ci checklistę.');
+        track('link_missing', { link: 'newsletter.action' });
+        if (window.console && console.warn) console.warn('[Panel wdrożeniowy] Brak adresu formularza: ONB_CONFIG.newsletter.action');
+        return;
+      }
+
+      var body = new FormData();
+      body.append(N.emailField || 'email', email);
+      var extra = N.extraFields || {};
+      Object.keys(extra).forEach(function (k) { body.append(k, extra[k]); });
+
+      var idle = leadLabel.textContent;
+      leadBtn.disabled = true;
+      leadLabel.textContent = 'Wysyłam…';
+      var controller = window.AbortController ? new AbortController() : null;
+      var timeout = setTimeout(function () { if (controller) controller.abort(); }, 12000);
+
+      /* no-cors: systemy mailingowe zwykle nie zwracają nagłówków CORS, więc wysyłamy
+         zgłoszenie bez czytania odpowiedzi. Błąd pokazujemy tylko przy braku połączenia. */
+      fetch(N.action, { method: 'POST', body: body, mode: 'no-cors', signal: controller ? controller.signal : undefined })
+        .then(function () {
+          clearTimeout(timeout);
+          save('leadSent', true);
+          track('generate_lead', { form: 'checklista_startowa' });
+          showLeadSuccess(true);
+        }, function () {
+          clearTimeout(timeout);
+          leadBtn.disabled = false;
+          leadLabel.textContent = idle;
+          leadError('Nie udało się wysłać zapisu. Sprawdź połączenie z internetem i spróbuj jeszcze raz.');
+          track('lead_form_error', { reason: 'network' });
+        });
+    });
+  }
+
+  /* ---------- Powiększanie zrzutów wypłat ---------- */
+  var proofDialog = document.getElementById('onb-proof-dialog');
+  if (proofDialog && typeof proofDialog.showModal === 'function') {
+    var proofImg = $('[data-proof-full]', proofDialog);
+    var proofOpener = null;
+    $$('[data-proof-open]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var img = $('img', btn);
+        proofImg.src = img.currentSrc || img.src;
+        proofImg.alt = img.alt;
+        proofOpener = btn;
+        proofDialog.showModal();
+      });
+    });
+    $('[data-proof-close]', proofDialog).addEventListener('click', function () { proofDialog.close(); });
+    proofDialog.addEventListener('click', function (e) { if (e.target === proofDialog) proofDialog.close(); });
+    proofDialog.addEventListener('close', function () { if (proofOpener) proofOpener.focus(); });
+  }
+
   /* ---------- Wirtualny asystent ---------- */
   var KB = [
-    { k: ['legal', 'prawn', 'zgodn', 'wolno', 'oszust', 'scam', 'piramid', 'uczciw'],
+    { id: 'legalnosc', w: 2, k: ['legal', 'prawn', 'zgodn', 'wolno', 'oszust', 'scam', 'piramid', 'uczciw'],
       a: 'Tak, to legalne. Banki i platformy same prowadzą programy poleceń i płacą za skuteczne polecenie. Trzymaj się ich regulaminów: nie zakładaj kont na cudze dane, nie obiecuj nikomu gwarantowanych zarobków i mów wprost, że link jest polecający.' },
-    { k: ['podat', 'pit', 'skarbow', 'rozlicz', 'zus', 'urzad', 'zeznan'],
+    { id: 'podatki', w: 2, k: ['podat', 'pit', 'skarbow', 'rozlicz', 'zus', 'urzad', 'zeznan'],
       a: 'Premie z promocji bankowych to zwykle nagrody w sprzedaży premiowej. Do 2000 zł są zwolnione z PIT, a od wyższych bank sam pobiera 10% podatku. Prowizje z poleceń to Twój przychód, który trzeba wykazać w zeznaniu rocznym. W razie wątpliwości zapytaj księgową.' },
-    { k: ['firm', 'dzialaln', 'nierejestr', 'faktur', 'ceidg'],
+    { id: 'firma', w: 2, k: ['firm', 'dzialaln', 'nierejestr', 'faktur', 'ceidg'],
       a: 'Na start firma nie jest potrzebna. Przy małych przychodach z poleceń możesz działać w ramach działalności nierejestrowanej. Jej limit to 225% minimalnego wynagrodzenia w kwartale. Gdy zarabiasz więcej, trzeba założyć firmę.' },
-    { k: ['haslo', 'hasla', 'hasel', 'kod', 'odblok', 'zablok', 'klodk', 'zamkniet'],
+    { id: 'hasla', w: 2, k: ['haslo', 'hasla', 'hasel', 'kod', 'odblok', 'zablok', 'klodk', 'zamkniet'],
       a: 'Hasło do każdego kroku znajdziesz w poprzednim kroku. Hasło do Kroku 2 podaję na końcu wideo w Kroku 1. Wpisz je w polu na dole strony, a następny krok od razu się otworzy. Hasło do Kroku 4 otwiera od razu także Krok 5.' },
-    { k: ['zacz', 'poczat', 'pierwsz', 'kolejnos', 'jak dziala', 'co robic', 'od czego'],
+    { id: 'start', k: ['zacz', 'poczat', 'pierwsz', 'kolejnos', 'jak dziala', 'co robic', 'od czego'],
       a: 'Zacznij od Kroku 1: obejrzyj wideo i załóż konto M2M. Potem sprawdź e-mail, aktywuj konto i zanotuj hasło do Kroku 2. Kolejne kroki otwierają się po kolei.' },
-    { k: ['bank', 'konto', 'konta', 'kont', 'premi', 'mbank', 'pekao', 'pko', 'alior', 'millennium', 'velo', 'bnp', 'santander', 'ing', 'credit', 'agricole', '26'],
+    { id: 'banki', k: ['bank', 'konto', 'konta', 'kont', 'premi', 'mbank', 'pekao', 'pko', 'alior', 'millennium', 'velo', 'bnp', 'santander', 'ing', 'credit', 'agricole', '26'],
       a: 'W Kroku 2 masz 10 banków w dwóch grupach: 4 dla osób poniżej 26 lat i 6 dla osób powyżej 26 lat. Premie wynoszą od 300 do 650 zł za konto. Bank wypłaca premię, gdy spełnisz warunki z regulaminu promocji.' },
-    { k: ['ebroker', 'broker', 'partner'],
+    { id: 'ebroker', k: ['ebroker', 'broker', 'partner'],
       a: 'W Kroku 3 zakładasz konto w eBrokerPartner, gdzie polecasz produkty finansowe za prowizję. Kliknij przycisk w Kroku 3, wypełnij formularz i potwierdź adres e-mail.' },
-    { k: ['akadem', 'vip', '697', 'mentor', 'rat', 'payu', 'payp', 'blik', 'kart'],
+    { id: 'akademia', k: ['akadem', 'vip', '697', 'mentor', 'rat', 'payu', 'payp', 'blik', 'kart'],
       a: 'Akademia VIP kosztuje teraz 697 zł zamiast 3497 zł. Zapłacisz przez PayU, BLIK, kartą, PayPo albo w maksymalnie 10 ratach 0%. Przy zamówieniu w polu z numerem mentora wpisz 833681.' },
-    { k: ['plan', 'startow', '69', 'pdf', 'skrypt', 'olx', 'tiktok', 'messenger', 'grup', 'tani', 'ebook', 'e-book', 'bonus'],
+    { id: 'opinie', w: 2, k: ['opini', 'wynik', 'kursant', 'dowod', 'screen', 'zrzut', 'efekt'],
+      a: 'Zrzuty wypłat i opinie kursantów znajdziesz w Kroku 4, nad przyciskiem zamówienia Akademii. Pamiętaj, że wyniki zależą od pracy każdej osoby.' },
+    { id: 'checklista', w: 2, k: ['checklist', 'lista', 'newsletter', 'darmow', 'zapis', 'mail', 'e-mail'],
+      a: 'Darmową Checklistę Startową odbierzesz na stronie głównej: wpisz e-mail w ciemnym bloku pod powitaniem, a PDF przyjdzie na Twoją skrzynkę. Wypisujesz się jednym kliknięciem.' },
+    { id: 'plan_startowy', k: ['plan', 'startow', '69', 'pdf', 'skrypt', 'olx', 'tiktok', 'messenger', 'grup', 'tani', 'ebook', 'e-book', 'bonus'],
       a: 'Plan Startowy kosztuje 69,70 zł. To plik PDF z gotowymi skryptami i opisem darmowych źródeł ruchu: OLX, grupy na Facebooku, TikTok i Messenger. W prezencie dostajesz e-book o płatnych reklamach. Znajdziesz go w Kroku 5.' },
-    { k: ['zwrot', 'reklamac', 'odstap', 'oddac'],
+    { id: 'zwroty', w: 2, k: ['zwrot', 'reklamac', 'odstap', 'oddac'],
       a: 'Plan Startowy to plik PDF dostarczany od razu po zakupie. Zamawiając go, zgadzasz się na natychmiastowe dostarczenie, dlatego po zakupie nie ma zwrotów. Zasady zwrotów Akademii VIP opisuje regulamin jej sprzedawcy.' },
-    { k: ['zarob', 'ile', 'kas', 'pieniad', 'dochod', 'wyplat', 'kwot'],
+    { id: 'zarobki', k: ['zarob', 'ile', 'kas', 'pieniad', 'dochod', 'wyplat', 'kwot'],
       a: 'Wynik zależy od tego, ile osób skorzysta z Twoich poleceń i jakie promocje są akurat dostępne. Kwoty przy bankach to maksymalne premie, a nie gwarancja. Nikt uczciwy nie obieca Ci konkretnej sumy.' },
-    { k: ['bezpiecz', 'dane', 'danych', 'prywat', 'rodo'],
-      a: 'Ten panel nie wysyła nigdzie Twoich danych. Hasła i postęp zapisują się tylko w tej przeglądarce. Dane osobowe podajesz wyłącznie na stronach banków i partnerów.' },
-    { k: ['czas', 'dlugo', 'minut', 'godzin', 'szybko'],
+    { id: 'dane', w: 2, k: ['bezpiecz', 'dane', 'danych', 'prywat', 'rodo'],
+      a: 'Hasła i postęp zapisują się tylko w tej przeglądarce. Twój e-mail trafia do mojego systemu mailingowego tylko wtedy, gdy sam zapiszesz się po checklistę. Dane do kont podajesz wyłącznie na stronach banków i partnerów.' },
+    { id: 'czas', k: ['czas', 'dlugo', 'minut', 'godzin', 'szybko'],
       a: 'Pierwszy krok to kilkanaście minut. Konto w banku zakładasz online, zwykle w kilkanaście minut. Resztę robisz we własnym tempie, a panel zapamięta, gdzie skończyłeś.' },
-    { k: ['kontakt', 'napisz', 'napisac', 'pomoc', 'problem', 'wiadomosc', 'czlowiek'],
+    { id: 'kontakt', k: ['kontakt', 'napisz', 'napisac', 'pomoc', 'problem', 'wiadomosc', 'czlowiek'],
       a: 'Jeśli coś nie działa albo masz pytanie spoza panelu, napisz do mnie. Link "Napisz do mnie" jest na dole panelu.' }
   ];
   var FALLBACK = 'Na to pytanie nie mam jeszcze gotowej odpowiedzi. Zacznij od Kroku 1 albo napisz do mnie, link do kontaktu jest na dole panelu.';
@@ -1495,9 +1861,10 @@
           if (tokens[i].indexOf(kw) === 0) { score += 1; break; }
         }
       });
+      score *= entry.w || 1;
       if (score > bestScore) { bestScore = score; best = entry; }
     });
-    return best ? best.a : FALLBACK;
+    return best;
   }
 
   var chatLog = document.getElementById('onb-chat-log');
@@ -1514,7 +1881,7 @@
     chatLog.scrollTop = chatLog.scrollHeight;
     return el;
   }
-  function ask(question) {
+  function ask(question, source) {
     question = String(question || '').trim();
     if (!question) {
       chatError.textContent = 'Wpisz pytanie albo wybierz jedno z podpowiedzi.';
@@ -1533,14 +1900,16 @@
     chatLog.scrollTop = chatLog.scrollHeight;
     setTimeout(function () {
       chatLog.removeChild(typing);
-      bubble(answerFor(question), 'bot');
+      var match = answerFor(question);
+      bubble(match ? match.a : FALLBACK, 'bot');
+      track('assistant_question', { topic: match ? match.id : 'brak_odpowiedzi', source: source || 'pole_tekstowe' });
       chatBusy = false;
     }, reduceMotion ? 200 : 650 + Math.min(900, question.length * 12));
   }
   if (chatForm) {
     chatForm.addEventListener('submit', function (e) { e.preventDefault(); ask(chatInput.value); });
     $$('[data-chat-suggest]').forEach(function (b) {
-      b.addEventListener('click', function () { ask(b.textContent); });
+      b.addEventListener('click', function () { ask(b.textContent, 'podpowiedz'); });
     });
   }
 
